@@ -21,9 +21,9 @@ mongoose.connect(urlDB)
     .catch((err) => console.error("Error al conectar con la base de datos", err))
     ;
 
-app.get("/", (req, res) => {
-    res.send("El servidor funciona correctamente")
-});
+const path = require('path');
+// ... otras configuraciones (express.json, cors, etc.)
+app.use(express.static(path.join(__dirname, '..', 'frontend', 'tienda')));
 
 app.use('/api/auth', rutasAuth)
 app.use('/api/playeras', rutasPlayera);
