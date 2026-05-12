@@ -25,6 +25,9 @@ const path = require('path');
 // ... otras configuraciones (express.json, cors, etc.)
 app.use(express.static(path.join(__dirname, '..', 'frontend', 'tienda')));
 
+// Sirve el panel de administración bajo la ruta /admin
+app.use('/admin', express.static(path.join(__dirname, '..', 'frontend', 'admin')));
+
 app.use('/api/auth', rutasAuth)
 app.use('/api/playeras', rutasPlayera);
 app.use('/api/carrito', rutasCarrito);
