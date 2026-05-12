@@ -50,6 +50,8 @@ const crearPedido = async (req, res) => {
         });
         await nuevoPedido.save();
 
+        const stocksAfectados = new Set();
+
         // 4. Crear los ItemPedido y actualizar el stock
         for (const item of itemsCarrito) {
             // Crear el ítem del pedido con el SNAPSHOT
@@ -70,6 +72,11 @@ const crearPedido = async (req, res) => {
             await Stock.findByIdAndUpdate(item.stock._id, {
                 $inc: { cantidad: -item.cantidad }
             });
+            stocksAfectados.add(item.stock._id.toString());
+        }
+
+        for (const stockId of stocksAfectados) {
+            await ajustarCarritosPorStock(stockId);
         }
 
         // 5. Eliminar los ítems del carrito
@@ -176,3 +183,44 @@ const actualizarEstadoPedido = async (req, res) => {
 };
 
 module.exports = { crearPedido, obtenerPedidosUsuario, obtenerTodosPedidos, actualizarEstadoPedido };
+
+/**
+ * Revisa todos los carritos activos que contengan el stock indicado
+ * y ajusta las cantidades según la nueva disponibilidad real.
+ * @param {string} stockId - ID del documento Stock
+ */
+async function ajustarCarritosPorStock(stockId) {
+    try {
+        // 1. Obtener el stock actualizado
+        const stockActual = await Stock.findById(stockId);
+        if (!stockActual) return;
+
+        const cantidadDisponible = stockActual.cantidad;
+
+        // 2. Buscar todos los ítems de carrito con ese stock
+        //    y cuyo carrito esté activo (podemos filtrar en la consulta con populate)
+        const items = await ItemCarrito.find({ stock: stockId }).populate({
+            path: 'carrito',
+            match: { estado: 'activo' },
+            select: '_id estado'
+        });
+
+        // Filtrar los que no tengan carrito porque el match los excluyó (populate devuelve null si no coincide)
+        const itemsEnCarritosActivos = items.filter(item => item.carrito !== null);
+
+        for (const item of itemsEnCarritosActivos) {
+            if (cantidadDisponible === 0) {
+                // Si se agotó, eliminar el ítem
+                await ItemCarrito.findByIdAndDelete(item._id);
+            } else if (item.cantidad > cantidadDisponible) {
+                // Si tiene más de lo disponible, ajustar al máximo
+                item.cantidad = cantidadDisponible;
+                await item.save();
+            }
+            // Si la cantidad es menor o igual, no se modifica
+        }
+    } catch (error) {
+        console.error(`Error ajustando carritos para stock ${stockId}:`, error);
+        // No lanzamos el error para no detener el flujo principal
+    }
+}
