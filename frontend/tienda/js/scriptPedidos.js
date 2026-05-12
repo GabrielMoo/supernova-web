@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function cargarPedidos(usuarioId) {
     const contenedor = document.getElementById('lista-pedidos');
     try {
-        const res = await fetch(`http://localhost:3000/api/pedidos/${usuarioId}`);
+        const res = await fetch(`/api/pedidos/${usuarioId}`);
         const pedidos = await res.json();
 
         if (pedidos.length === 0) {

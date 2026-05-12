@@ -50,7 +50,7 @@ formRegister.addEventListener('submit', function(evento){
         contrasena: contrasena
     };
 
-    fetch('http://localhost:3000/api/auth/registro', {
+    fetch('/api/auth/registro', {
         method: 'POST',
         headers:{
             'Content-Type': 'application/json'
@@ -91,7 +91,7 @@ formLogin.addEventListener('submit', function(evento){
         contrasena: contrasena
     };
 
-    fetch('http://localhost:3000/api/auth/login', {
+    fetch('/api/auth/login', {
         method: 'POST',
         headers:{
             'Content-Type': 'application/json'

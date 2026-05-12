@@ -32,7 +32,7 @@ let productoEditando = null;
 async function cargarProductos() {
     try {
         
-        const response = await fetch('http://localhost:3000/api/playeras/obtener-playeras');
+        const response = await fetch('/api/playeras/obtener-playeras');
         const productos = await response.json();
 
         dataBase = productos.map((producto, index) => {
@@ -126,7 +126,7 @@ function renderTable(page) {
             try {
 
                 const response = await fetch(
-                    `http://localhost:3000/api/playeras/eliminar-playera/${item.id}`,
+                    `/api/playeras/eliminar-playera/${item.id}`,
                     {
                         method: 'DELETE'
                     }
@@ -416,7 +416,7 @@ btnPublicar.addEventListener('click', async (e) => {
             console.log("EDITANDO PRODUCTO");
 
             response = await fetch(
-                `http://localhost:3000/api/playeras/editar-playera/${productoEditando.id}`,
+                `/api/playeras/editar-playera/${productoEditando.id}`,
                 {
                     method: 'PUT',
                     body: formData
@@ -434,7 +434,7 @@ btnPublicar.addEventListener('click', async (e) => {
             console.log("CREANDO PRODUCTO");
 
             response = await fetch(
-                'http://localhost:3000/api/playeras/registro-playera',
+                '/api/playeras/registro-playera',
                 {
                     method: 'POST',
                     body: formData

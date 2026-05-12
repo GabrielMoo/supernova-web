@@ -48,8 +48,8 @@ let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
 async function obtenerProductos(categoria = 'todos') {
     try {
         const url = categoria === 'todos'
-            ? 'http://localhost:3000/api/playeras/obtener-playeras'
-            : `http://localhost:3000/api/playeras/obtener-playeras/${categoria}`;
+            ? '/api/playeras/obtener-playeras'
+            : `/api/playeras/obtener-playeras/${categoria}`;
 
         const res = await fetch(url);
         const productos = await res.json();
@@ -76,7 +76,7 @@ async function agregarAlCarrito(producto) {
     }
 
     try {
-        const res = await fetch('http://localhost:3000/api/carrito/agregar', {
+        const res = await fetch('/api/carrito/agregar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -101,7 +101,7 @@ async function actualizarCarrito() {
     listaCarritoUI.innerHTML = '';
 
     try {
-        const res = await fetch(`http://localhost:3000/api/carrito/${usuario.id}`);
+        const res = await fetch(`/api/carrito/${usuario.id}`);
         const items = await res.json();
 
         let total = 0;
@@ -175,7 +175,7 @@ document.addEventListener('click', (e) => {
 // Globales porque se inyectan como onclick en el HTML renderizado
 window.eliminarItem = async function (itemId) {
     try {
-        await fetch(`http://localhost:3000/api/carrito/eliminar/${itemId}`, { method: 'DELETE' });
+        await fetch(`/api/carrito/eliminar/${itemId}`, { method: 'DELETE' });
         actualizarCarrito();
     } catch (error) {
         console.error("Error al eliminar:", error);
@@ -191,7 +191,7 @@ window.cambiarCantidad = async function (itemId, nuevaCantidad, stockDisponible)
     }
 
     try {
-        const res = await fetch(`http://localhost:3000/api/carrito/actualizar/${itemId}`, {
+        const res = await fetch(`/api/carrito/actualizar/${itemId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ nuevaCantidad: nuevaCantidad })

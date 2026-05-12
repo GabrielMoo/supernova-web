@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function cargarDirecciones(usuarioId) {
     const contenedor = document.getElementById('contenedor-direcciones-pago');
     try {
-        const res = await fetch(`http://localhost:3000/direcciones/${usuarioId}`);
+        const res = await fetch(`/direcciones/${usuarioId}`);
         const direcciones = await res.json();
 
         if (direcciones.length === 0) {
@@ -63,7 +63,7 @@ async function cargarResumenPedido(usuarioId) {
     const totalUI = document.getElementById('resumen-total');
 
     try {
-        const res = await fetch(`http://localhost:3000/api/carrito/${usuarioId}`);
+        const res = await fetch(`/api/carrito/${usuarioId}`);
         const items = await res.json();
 
         let subtotal = 0;
@@ -135,7 +135,7 @@ if (btnPagar) {
                 const envioTexto = '99';
                 const totalTexto = document.getElementById('resumen-total').innerText.replace('$', '');
 
-                const respuesta = await fetch('http://localhost:3000/api/pedidos/crear', {
+                const respuesta = await fetch('/api/pedidos/crear', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

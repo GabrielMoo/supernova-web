@@ -97,8 +97,8 @@ formDireccion.addEventListener('submit', async (e) => {
 
     // Decidimos la URL y el Método dependiendo de si estamos editando o creando
     const url = editandoId 
-        ? `http://localhost:3000/direcciones/${editandoId}` 
-        : 'http://localhost:3000/direcciones';
+        ? `/direcciones/${editandoId}` 
+        : '/direcciones';
     
     const metodo = editandoId ? 'PUT' : 'POST';
 
@@ -144,7 +144,7 @@ async function obtenerDireccionesDeBD() {
     if (!usuarioLogueado) return;
 
     try {
-        const respuesta = await fetch(`http://localhost:3000/direcciones/${usuarioLogueado.id}`);
+        const respuesta = await fetch(`/direcciones/${usuarioLogueado.id}`);
         const direcciones = await respuesta.json();
         
         direccionesLocales = direcciones; // <--- AGREGAR ESTO: Guardamos copia en local
@@ -198,7 +198,7 @@ btnConfirmarEliminar.addEventListener('click', async () => {
     if (!editandoId) return;
 
     try {
-        const respuesta = await fetch(`http://localhost:3000/direcciones/${editandoId}`, {
+        const respuesta = await fetch(`/direcciones/${editandoId}`, {
             method: 'DELETE'
         });
 

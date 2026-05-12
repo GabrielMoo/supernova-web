@@ -11,7 +11,7 @@ const btnNext = document.getElementById("btn-next");
 // 1. OBTENER DATOS DE LA BASE DE DATOS
 async function cargarClientes() {
     try {
-        const respuesta = await fetch('http://localhost:3000/api/auth/clientes-stats');
+        const respuesta = await fetch('/api/auth/clientes-stats');
         const clientes = await respuesta.json();
         
         dataBase = clientes; // Guardamos los datos

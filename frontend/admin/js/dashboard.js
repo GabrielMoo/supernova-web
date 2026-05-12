@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function cargarTodo() {
     try {
         // 1. Obtener todos los pedidos
-        const response = await fetch('http://localhost:3000/api/pedidos/admin/todos');
+        const response = await fetch('/api/pedidos/admin/todos');
         if (!response.ok) throw new Error('Error al obtener pedidos');
         const pedidos = await response.json();
 
@@ -187,7 +187,7 @@ function renderizarLineas(ventasUltimos7Dias) {
 // ---------- Alertas de Inventario (se mantiene igual) ----------
 async function cargarAlertasInventario() {
     try {
-        const response = await fetch('http://localhost:3000/api/playeras/obtener-playeras');
+        const response = await fetch('/api/playeras/obtener-playeras');
         const productos = await response.json();
         let totalAlertas = 0;
         productos.forEach(producto => {

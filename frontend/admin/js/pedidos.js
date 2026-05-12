@@ -12,7 +12,7 @@ let totalPages = 1;
 // Cargar pedidos desde el servidor
 async function cargarPedidos() {
     try {
-        const response = await fetch('http://localhost:3000/api/pedidos/admin/todos');
+        const response = await fetch('/api/pedidos/admin/todos');
         const pedidos = await response.json();
         pedidosGlobal = pedidos;
         totalPages = Math.ceil(pedidosGlobal.length / rowsPerPage);
@@ -85,7 +85,7 @@ function renderPedidos(page) {
             const nuevoEstado = e.target.value;
             try {
                 const response = await fetch(
-                    `http://localhost:3000/api/pedidos/admin/estado/${pedido._id}`,
+                    `/api/pedidos/admin/estado/${pedido._id}`,
                     {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
