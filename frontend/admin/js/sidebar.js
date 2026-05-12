@@ -76,7 +76,7 @@ class SupernovaSide extends HTMLElement {
                     localStorage.removeItem('usuario'); // Ajusta este nombre si usas otro
                     
                     // Redirigimos al usuario a la vista de login
-                    window.location.href = '../tienda/login-register.html';
+                    window.location.href = '../login-register.html';
                 });
             }
         });
