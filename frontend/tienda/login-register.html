@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/estiloLogin.css">
+
+    <link rel="stylesheet" href="css/estilos.css">
+
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <title></title>
+</head>
+
+<body>
+    <!-- Sign up -->
+    <div class="container" id="container">
+        <div class="form-container sign-up">
+            <form id="form-registro">
+                <h1>Crear Cuenta</h1>
+
+                <span class="reg-log" >Registrar con tu correo</span>
+                <input type="text" placeholder="Nombre" id="reg-nombre">
+                <input type="email" placeholder="Ingresa tu correo" id="reg-email">
+                <div class="contenedor-contrasena">
+                    <input type="password" placeholder="Ingresa tu contraseña" id="reg-contrasena">
+                    <span id="icono-ojo" style="cursor: pointer;"><i class="bi bi-eye"></i></span>
+                </div>
+                <ul class="requisitos-contrasena">
+                    <li id="req-longitud"><i class="bi bi-x-circle"></i> Mínimo 8 caracteres</li>
+                    <li id="req-mayuscula"><i class="bi bi-x-circle"></i> Una letra mayúscula</li>
+                    <li id="req-minuscula"><i class="bi bi-x-circle"></i> Una letra minúscula</li>
+                    <li id="req-numero"><i class="bi bi-x-circle"></i> Un número</li>
+                </ul>
+                <button>Registrarse</button>
+            </form>
+        </div>
+
+        <!-- Sign in -->
+        <div class="form-container sign-in">
+            <form id="form-sesion">
+                <h1>Iniciar Sesion</h1>
+
+                <span class="reg-log" >Iniciar sesion con correo y contraseña</span>
+                <input type="email" placeholder="Ingresa tu correo" id="login-email">
+                <div class="contenedor-contrasena">
+                <input type="password" placeholder="Ingresa tu contraseña" id="login-contrasena">
+                <span id="icono-ojo-login" style="cursor: pointer;"><i class="bi bi-eye"></i></span>
+                </div>
+                <button>Iniciar Sesion</button>
+            </form>
+        </div>
+
+        <!--Redirect to Sign in Page-->
+        <div class="toggle-container">
+            <div class="toggle">
+                <div class="toggle-panel toggle-left">
+                    <h1>Bienvenido a <br> Supernova Prints</h1>
+                    <p>Iniciar sesion con correo y contraseña</p>
+                    <button class="hidden" id="login">Iniciar Sesion</button>
+                </div>
+                <!--Redirect to Sign up Page-->
+                <div class="toggle-panel toggle-right">
+                    <h1>Bienvenido</h1>
+                    <p>Crea una cuenta y disfruta nuestro sitio</p>
+                    <button class="hidden" id="register">Crear Cuenta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-correo-no-encontrado" class="modal-fondo" style="display: none;">
+        <div class="modal-contenido">
+            <div class="cabecera-modal-carrito">
+                <h3>¡ERROR DE INICIO DE SESIÓN!</h3>
+            </div>
+            <div class="body-modal-carrito">
+                <p>Error: Correo no encontrado, verifica que esté escrito correctamente.</p>
+            </div>
+            <div class="footer-modal-carrito">
+                <button id="btn-cerrar-modal-correo" class="btn-ok">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    <div id="modal-registro" class="modal-fondo" style="display: none;">
+        <div class="modal-contenido">
+            <div class="cabecera-modal-carrito">
+                <h3 id="titulo-modal-registro">¡REGISTRO EXITOSO!</h3>
+            </div>
+            <div class="body-modal-carrito">
+                <p id="texto-modal-registro">Tu cuenta ha sido creada correctamente.</p>
+            </div>
+            <div class="footer-modal-carrito">
+                <button id="btn-cerrar-modal-registro" class="btn-ok">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- linking with script.js -->
+    <script src="js/ScriptLogin.js"></script>
+
+</body>
+
+</html>
+<!-- created by badr aouragh or boss.exe -->

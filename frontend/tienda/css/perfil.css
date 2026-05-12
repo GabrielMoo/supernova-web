@@ -1,0 +1,513 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+
+body {
+    background-color: #f1f1f1;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+#buscarBtn {
+    display: none !important;
+}
+
+.contenedor-principal {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.contenido-perfil {
+    width: 100%;
+    max-width: 800px; /* Evita que se estire demasiado en monitores grandes */
+    display: flex;
+    flex-direction: column;
+    gap: 30px; /* Espacio uniforme entre las tarjetas */
+}
+
+.titulo-pagina {
+    font-size: 22px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+/* ESTILOS DE LAS TARJETAS BLANCAS */
+.tarjeta-blanca {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03); /* Sombra muy sutil para dar profundidad */
+}
+
+/* TARJETA 1: INFO */
+.campo-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 25px;
+}
+
+.campo-info:last-child {
+    margin-bottom: 0;
+}
+
+.fila-etiqueta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.etiqueta {
+    color: #777; /* Gris para las etiquetas */
+    font-size: 15px;
+}
+
+.valor {
+    color: #111;
+    font-size: 16px;
+}
+
+.icono-editar {
+    cursor: pointer;
+    color: #333;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.icono-editar:hover {
+    color: #000;
+}
+
+/* TARJETA 2: DIRECCIONES */
+.cabecera-direcciones {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 20px;
+}
+
+.titulo-seccion {
+    font-weight: 700;
+    font-size: 16px;
+    color: #000;
+}
+
+.btn-agregar {
+    font-weight: 700;
+    font-size: 15px;
+    color: #000;
+    cursor: pointer;
+}
+
+.caja-vacia {
+    background-color: #f8f9fa; /* Fondo gris claro interior */
+    border: 1px solid #e9ecef; /* Borde sutil */
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #444;
+    font-size: 15px;
+}
+
+.caja-vacia i {
+    font-size: 18px;
+    color: #666;
+}
+
+/* BOTONES DE LA PARTE INFERIOR */
+.acciones-sesion {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-top: 10px;
+    flex-wrap: wrap; /* Permite que los botones bajen si la pantalla es muy chica */
+}
+
+.btn-cerrar-sesion {
+    background-color: transparent;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #000;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.btn-cerrar-sesion:hover {
+    background-color: white;
+    border-color: #999;
+}
+
+.enlace-cerrar-todas {
+    font-size: 15px;
+    color: #111;
+    cursor: pointer;
+}
+
+/* Estilo para que el botón parezca texto normal */
+.btn-agregar {
+    background: transparent; /* Quita el fondo gris por defecto */
+    border: none;            /* Quita el borde por defecto */
+    padding: 0;              /* Quita el relleno extra */
+    font-family: inherit;    /* Usa la misma fuente que el resto de tu página */
+    font-size: 1rem;         /* Tamaño de texto normal */
+    font-weight: 600;        /* Un poco de negrita si así lo requiere tu diseño */
+    color: black;            
+    cursor: pointer;         /* Aparece la 'manita' al pasar el mouse */
+    
+    /* Para alinear perfectamente el ícono con el texto */
+    display: flex;
+    align-items: center;
+    gap: 8px; 
+}
+
+/* Un pequeño efecto para que se note que es clickeable */
+.btn-agregar:hover {
+    color: #555;
+}
+
+/* OVERLAY Y CONTENEDOR */
+.overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none; 
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.panel-formulario {
+    background: white;
+    padding: 24px 32px;
+    border-radius: 12px;
+    width: 600px; /* Un poco más ancho para acomodar 3 columnas */
+    max-width: 95%;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    font-family: 'Open Sans', sans-serif;
+}
+
+/* CABECERA Y BOTÓN X */
+.cabecera-modal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.cabecera-modal h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: black;
+}
+
+.btn-cerrar-modal {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #555;
+}
+
+/* INPUTS Y FILAS */
+.fila-inputs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.fila-inputs.triple .grupo-input {
+    flex: 1; /* Para que CP, Ciudad y Estado midan lo mismo */
+}
+
+.grupo-input {
+    flex: 1;
+    margin-bottom: 12px;
+    position: relative;
+}
+
+.etiqueta-pequena {
+    position: absolute;
+    top: 6px;
+    left: 12px;
+    font-size: 0.7rem;
+    color: #666;
+    z-index: 1;
+}
+
+/* ESTILOS DE LOS CAMPOS DE TEXTO */
+.input-estilo {
+    width: 100%;
+    padding: 14px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #333;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+/* Ajuste específico para el select de país para que no pise la etiqueta */
+select[name="pais"].input-estilo {
+    padding-top: 22px;
+    padding-bottom: 6px;
+}
+
+/* EFECTO CUANDO HACES CLIC EN UN INPUT (Borde negro grueso) */
+.input-estilo:focus {
+    outline: none;
+    border: 2px solid black;
+    padding: 13px 11px; /* Compensa el píxel extra del borde para que no brinque el diseño */
+}
+
+/* CHECKBOX */
+.fila-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    margin-bottom: 25px;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.fila-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* BOTONES INFERIORES */
+.acciones-form {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+}
+
+.btn-texto {
+    background: transparent;
+    border: none;
+    text-decoration: underline;
+    font-size: 0.95rem;
+    cursor: pointer;
+    color: black;
+}
+
+.btn-guardar {
+    background: black;
+    color: white;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-guardar:hover {
+    background: #333;
+}
+
+/* GRID PARA LAS DIRECCIONES */
+.grid-direcciones {
+    display: grid;
+    /* Crea columnas automáticas. Si hay espacio pone 2 o 3, si es celular pone 1 */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* LA TARJETA INDIVIDUAL */
+.tarjeta-direccion {
+    position: relative;
+    padding: 20px;
+    border-radius: 12px;
+    background-color: transparent; /* Transparente por defecto */
+    transition: background-color 0.2s ease; /* Transición suave */
+    font-size: 0.95rem;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* EL EFECTO HOVER (El recuadro gris sutil) */
+.tarjeta-direccion:hover {
+    background-color: #f5f5f5; /* Gris muy claro, similar a tu diseño */
+}
+
+/* TEXTOS DE LA TARJETA */
+.etiqueta-predeterminada {
+    color: #777;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.texto-principal-direccion {
+    font-weight: 400; /* No muy negrita, como en tu imagen */
+    font-size: 1rem;
+    color: #000;
+}
+
+/* EL BOTÓN DE LÁPIZ (EDITAR) */
+.btn-editar-lapiz {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #a5a5a5;
+    transition: color 0.2s;
+    /* Se oculta por defecto y aparece al hacer hover en la tarjeta (opcional) */
+    opacity: 0; 
+}
+
+.tarjeta-direccion:hover .btn-editar-lapiz {
+    opacity: 1; /* El lápiz aparece cuando el mouse entra al recuadro gris */
+}
+
+.btn-editar-lapiz:hover {
+    color: #030303;
+}
+
+/* Contenedor relativo para que el botón se posicione respecto al form */
+#form-direccion {
+    position: relative;
+    padding-bottom: 0px; /* Espacio para que no choque con los botones */
+}
+
+.btn-eliminar {
+    position: absolute;
+    left: 0;
+    text-decoration: underline;
+    bottom: 15px; /* Ajusta según la altura de tus botones de guardar/cancelar */
+    background: none;
+    border: none;
+    color: #fca311; /* Rojo para indicar peligro */
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s, color 0.2s;
+    display: none; /* Se oculta por defecto, solo sale al editar */
+}
+
+.btn-eliminar:hover {
+    color: #a71d2a;
+    transform: scale(1.1);
+}
+
+/* ==========================================================================
+   7. MODALES
+   ========================================================================== */
+.modal-fondo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    /* Fondo oscuro semitransparente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    /* Para que quede por encima de todo */
+}
+
+.modal-fondo.activo {
+    display: flex;
+}
+
+.modal-contenido {
+    background: white;
+    border-radius: 6px;
+    text-align: left;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    /* Tu color de acento */
+    animation: aparecerModal 0.3s ease-out;
+}
+
+.modal-contenido h3 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
+    letter-spacing: 1px;
+}
+
+.modal-contenido p {
+    font-family: 'Open Sans', sans-serif;
+    color: #030303;
+}
+
+.cabecera-modal-carrito {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 14px 20px;
+    background-color: #030303;
+}
+
+.body-modal-carrito {
+    background-color: white;
+    width: 100%;
+    padding: 14px 20px;
+    align-items: center;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.footer-modal-carrito {
+    display: flex;
+    justify-content: right;
+    padding: 20px;
+    
+}
+
+.btn-secundario {
+    margin-right: 20px;
+    text-decoration: none;
+    color: white;
+    font-size: 0.9rem;
+    background-color: #030303;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 1rem;
+    font-weight: 400;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.btn-secundario:hover {
+    background-color: #13213c;
+}
+
+.btn-ok {
+    background-color: #e5e5e5;
+    color: #030303;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 400;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-ok:hover {
+    background-color: #fca311;
+    color: white;
+}

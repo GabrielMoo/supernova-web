@@ -1,0 +1,231 @@
+/* ==========================================================================
+   ESTILOS PARA MIS PEDIDOS (Integración con estilos.css)
+   ========================================================================== */
+body{
+    background-color: #efefef;
+}
+.contenedor-pedidos {
+    max-width: 900px;
+    margin: 3rem auto;
+    padding: 0 1rem;
+    color: #030303;
+    font-family: "Open Sans", sans-serif;
+}
+
+.contenedor-pedidos h1{
+    margin-bottom: 14px;
+    font-family: "Anton", sans-serif;
+    font-size: 2.2rem;
+    font-weight: 100;
+}
+
+/* Título principal de la página (Asegúrate de ponerle esta clase a tu <h2> o <h1>) */
+.titulo-mis-pedidos {
+    font-family: "Anton", sans-serif;
+    font-size: 2.5rem;
+    font-weight: 100;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    color: #111;
+}
+
+.sin-pedidos {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-top: 3rem;
+    color: #666;
+}
+
+/* --- TARJETA DE PEDIDO --- */
+.tarjeta-pedido {
+    background: #fff;
+    border-radius: 6px; /* Bordes más afilados como el resto de la web */
+    border: 1px solid #b5b5b5; /* Borde sólido en lugar de sombra suave */
+    margin-bottom: 2rem;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03); /* Sombra muy sutil */
+}
+
+/* --- ENCABEZADO DEL PEDIDO --- */
+.encabezado-pedido {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #efefef; /* Mismo fondo que los items del carrito */
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #b5b5b5;
+}
+
+.encabezado-pedido h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-family: "Anton", sans-serif; /* Tipografía fuerte */
+    font-weight: 100;
+    letter-spacing: 0.5px;
+    color: #030303;
+}
+
+.fecha-pedido {
+    display: block;
+    font-family: "Open Sans", sans-serif;
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 3px;
+}
+
+/* --- ETIQUETAS DE ESTADO (Look más premium y acorde a la marca) --- */
+.estado {
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.estado.pendiente { 
+    background: white; 
+    color: #e67e22; /* Usa el naranja de tus precios */
+    border: 1px solid #e67e22; 
+}
+
+.estado.en-preparacion { 
+    background: white; 
+    color: #f1c40f; 
+    border: 1px solid #f1c40f; 
+}
+
+.estado.enviado { 
+    background: white; 
+    color: #27ae60; 
+    border: 1px solid #27ae60; 
+}
+.estado.completado { 
+    background: white; 
+    color: #2980b9; 
+    border: 1px solid #2980b9; 
+}
+
+/* --- CUERPO DEL PEDIDO --- */
+.cuerpo-pedido {
+    padding: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.direccion {
+    flex: 1;
+    min-width: 200px;
+    border-right: 1px solid #b5b5b5; /* Separador visual */
+    padding-right: 1rem;
+}
+
+.direccion-titulo {
+    font-family: "Anton", sans-serif;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #030303;
+}
+
+.direccion p {
+    margin: 0 0 4px 0;
+    color: #333;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.items-pedido {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+/* --- ITEMS DEL PEDIDO (Mismo estilo que el carrito V2) --- */
+.item-miniatura {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.item-miniatura img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid #b5b5b5;
+}
+
+.item-miniatura .info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+/* Nota: Asegúrate de aplicar estas clases en tu HTML para diferenciar los textos */
+.item-miniatura .info .nombre-producto {
+    font-family: "Anton", sans-serif;
+    font-weight: 100;
+    font-size: 1.1rem;
+    color: #030303;
+    margin: 0;
+}
+
+.item-miniatura .info .variante-producto {
+    font-family: "Open Sans", sans-serif;
+    font-size: 0.95rem;
+    color: #666;
+    margin: 0;
+}
+
+.item-miniatura .info .precio-producto {
+    font-family: "Open Sans", sans-serif;
+    font-size: 1rem;
+    color: #333;
+    margin: 0;
+}
+
+/* --- FOOTER DEL PEDIDO Y TOTALES --- */
+.footer-pedido {
+    padding: 1.2rem 1.5rem;
+    background: #fff;
+    border-top: 1px solid #b5b5b5;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.totales {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 250px;
+}
+
+/* Nota: Usa esta clase en los div o p que envuelven el subtotal/envío */
+.linea-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    color: #666;
+}
+
+/* Usa esta clase para la fila del Total final */
+.linea-total.total-final {
+    font-family: "Anton", sans-serif;
+    font-size: 1.3rem;
+    color: #030303;
+    margin-top: 5px;
+    padding-top: 10px;
+    border-top: 1px solid #d5d5d5;
+}
+
+.linea-total.total-final span:last-child {
+    font-family: "Open Sans", sans-serif;
+    font-weight: 400;
+}
+
+#buscarBtn {
+    display: none !important;
+}

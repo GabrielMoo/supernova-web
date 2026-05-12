@@ -1,0 +1,905 @@
+/* ==========================================================================
+   1. GLOBALES Y RESET
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+main {
+    background-color: #efefef;
+}
+
+.ph {
+    font-size: 24px;
+}
+
+/* ==========================================================================
+   2. HEADER Y NAVBAR
+   ========================================================================== */
+nav {
+    background-color: black;
+    padding: 0.2rem 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    font-family: "Roboto Condensed", sans-serif;
+}
+
+.contenedor-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+    max-width: 1800px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    align-items: center;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 400;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+}
+
+.nav-links a i {
+    font-size: 1.4rem;
+}
+
+.nav-links a:hover {
+    opacity: 0.8;
+}
+
+#btn-iniciar-sesion {
+    background-color: white;
+    color: black; /* o el color que prefieras */
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 400;
+    display: inline-block;
+    transition: background-color 0.2s;
+}
+.btn-iniciar-sesion:hover {
+    background-color: #f0f0f0;
+}
+
+.logo {
+    color: aqua;
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: bolder;
+}
+
+.logo img {
+    height: 60px;
+}
+
+/* --- Barra de Búsqueda --- */
+.barra-busqueda {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+    width: 100%;
+    max-width: 1800px;
+    background-color: white;
+    padding: 0.2rem 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translateY(-100%);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 10;
+}
+
+.header.busqueda-activa .barra-busqueda {
+    transform: translateY(0);
+}
+
+.contenedor-input-buscar {
+    display: flex;
+    align-items: center;
+    width: 50%;
+    border-bottom: 2px solid #000;
+    padding-bottom: 5px;
+}
+
+.contenedor-input-buscar input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 1.2rem;
+    margin-left: 10px;
+    background: transparent;
+}
+
+.contenedor-input-buscar i {
+    font-size: 1.4rem;
+}
+
+.btn-busqueda {
+    background-color: transparent;
+    border: none;
+    font-size: 1.4rem;
+}
+
+#buscarBtn {
+    color: white;
+}
+
+#buscarBtn:hover,
+#cerrarBusquedaBtn:hover {
+    opacity: 0.8;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   3. BANNER Y FILTROS
+   ========================================================================== */
+.banner {
+    width: 100%;
+}
+
+.filtro {
+    background: white;
+    padding: 0px;
+    text-align: center;
+}
+
+#filtros {
+    background-color: #ffffff;
+    display: flex;
+    justify-content: space-around;
+    gap: 3rem;
+    padding: 30px 20px;
+    box-shadow: none;
+}
+
+.contenedor-btn-filtro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.contenedor-btn-filtro p {
+    color: #333333;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.btn-filtro {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: #f5f5f5;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333333;
+    transition: background-color 0.3s ease;
+}
+
+.btn-filtro:hover {
+    background-color: #e5e5e5;
+}
+
+.btn-filtro i {
+    font-size: 28px;
+    pointer-events: none;
+}
+
+.btn-filtro.activo {
+    background-color: #030303;
+    color: #ffffff;
+}
+
+.btn-filtro.activo:hover {
+    background-color: #13213c;
+}
+
+/* ==========================================================================
+   4. GRILLA DE PRODUCTOS (CATÁLOGO)
+   ========================================================================== */
+.grid-productos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 40px;
+}
+
+.tarjeta {
+    height: auto;
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #c2c2c2;
+    cursor: pointer;
+}
+
+.tarjeta:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+}
+
+.tarjeta:hover img {
+    transform: scale(1.08);
+}
+
+.tarjeta:hover .precio {
+    font-weight: 400;
+}
+
+.tarjeta:hover .contenedor-colores .circulo-color {
+    transform: scale(1.2);
+}
+
+.tarjeta img {
+    width: 100%;
+    border-radius: 5px;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s;
+    margin-bottom: 10px;
+}
+
+.tarjeta h3 {
+    font-size: 1.4rem;
+    color: #030303;
+    font-family: "Anton", sans-serif;
+    font-weight: 100;
+}
+
+.tarjeta .precio {
+    color: #e67e22;
+    font-weight: 200;
+    font-size: 1.2rem;
+    font-family: "Open Sans", sans-serif;
+}
+
+.contenedor-colores {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+.contenedor-colores p {
+    font-family: "Open Sans", sans-serif;
+    font-weight: 200;
+    font-size: 1.1rem;
+}
+
+.circulo-color {
+    margin-left: 15px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid #c2c2c2;
+    transition: transform 0.3s;
+}
+
+.contenedor-precio {
+    border-top: 1px solid #c2c2c2;
+    padding-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ==========================================================================
+   5. VISTA DE DETALLE DE PRODUCTO (PDP) Y TRANSICIONES
+   ========================================================================== */
+#vista-detalle-producto {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #efefef;
+    z-index: 1000;
+    overflow-y: auto;
+    display: none;
+}
+
+#vista-detalle-producto.vista-activa {
+    display: block;
+}
+
+.contenedor-pdp {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.encabezado-pdp {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: -15px;
+}
+
+.btn-cerrar {
+    background-color: white;
+    border: 1px solid #d5d5d5;
+    padding: 8px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #333;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    font-family: "Open Sans", sans-serif;
+}
+
+.btn-cerrar i {
+    margin-right: 4px;
+    font-size: 1.2rem;
+}
+
+.btn-cerrar:hover {
+    background-color: #e5e5e5;
+    transform: scale(1.05);
+}
+
+.columna-imagen img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.columna-info {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding: 10px 20px;
+    font-family: "Open Sans", sans-serif;
+}
+
+#pdp-nombre {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #111;
+    margin: 0;
+}
+
+.precio-pdp {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #111;
+    margin: 0;
+}
+
+.descripcion-pdp {
+    color: #666;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Opciones PDP (Tallas y Cortes) */
+.seccion-opciones {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.titulo-opcion {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+.contenedor-tallas,
+.contenedor-cortes-pdp {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.btn-talla,
+.btn-corte {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 10px 18px;
+    font-family: "Open Sans", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-talla:hover:not(:disabled),
+.btn-corte:hover:not(:disabled) {
+    border-color: #111;
+}
+
+.btn-talla.activa,
+.btn-corte.activa {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+}
+
+.btn-talla:disabled,
+.btn-corte:disabled {
+    background: #f9f9f9;
+    color: #b0b0b0;
+    border-color: #eaeaea;
+    cursor: not-allowed;
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+/* Acciones PDP */
+.acciones-compra {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.btn-principal {
+    flex-grow: 1;
+    background: #030303;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 16px;
+    font-size: 1.2rem;
+    font-weight: 400;
+    font-family: "Roboto Condensed", sans-serif;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-principal:hover {
+    background: #13213c;
+}
+
+/* --- API View Transitions --- */
+.foto-producto-transicion {
+    view-transition-name: producto-activo;
+}
+
+#pdp-imagen {
+    view-transition-name: producto-activo;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.5s;
+}
+
+/* ==========================================================================
+   6. CARRITO LATERAL (SLIDEOUT)
+   ========================================================================== */
+#overlay-carrito {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#overlay-carrito.activo {
+    display: block;
+    opacity: 1;
+}
+
+#panel-carrito {
+    position: fixed;
+    top: 0;
+    right: -500px;
+    width: 100%;
+    max-width: 500px;
+    height: 100vh;
+    background: white;
+    z-index: 1002;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s ease;
+}
+
+#panel-carrito.abierto {
+    right: 0;
+}
+
+.cabecera-carrito,
+.pie-carrito {
+    padding: 20px;
+    background: white;
+}
+
+.pie-carrito {
+    border-top: 1px solid #d5d5d5;
+}
+
+.carrito-vacio {
+    margin: 20px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 400;
+    font-size: 1.4rem;
+
+}
+
+.cabecera-carrito {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #efefef;
+    font-family: "Anton", sans-serif;
+    font-weight: 100;
+    font-size: 1.4rem;
+
+}
+
+.btn-cerrar-carrito {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.contenido-carrito {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.total-carrito {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.4rem;
+    font-weight: lighter;
+    margin-bottom: 15px;
+    font-family: 'Anton', sans-serif;
+}
+
+#suma-total-carrito {
+    font-family: "Open Sans", sans-serif;
+    font-weight: 400;
+}
+
+.item-carrito {
+    display: flex;
+    gap: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.item-carrito img {
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.info-item-carrito {
+    flex-grow: 1;
+}
+
+/* ==========================================================================
+   6. CARRITO LATERAL (SLIDEOUT) - ESTILOS ADICIONALES (NUEVO)
+   ========================================================================== */
+
+/* Ajuste del padding para que las tarjetas tengan espacio */
+.contenido-carrito {
+    padding: 0px;
+    /* Reducimos el padding original para equilibrar */
+}
+
+/* --- NUEVO DISEÑO DE TARJETA PARA EL CARRITO --- */
+.item-carrito.card-item-carrito {
+    display: flex;
+    gap: 15px;
+    background-color: #efefef;
+    /* Fondo gris claro */
+    padding: 15px;
+    /* Padding interno */
+    border-bottom: 1px solid #d5d5d5;
+    /* Quitamos el borde antiguo de la lista */
+    align-items: flex-start;
+    /* Alineamos la imagen arriba */
+}
+
+.foto-item-carrito {
+    width: 80px;
+    /* Un poco más grande como en la referencia */
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.info-item-carrito {
+    flex-grow: 1;
+    display: flex;
+    /* Para controlar el posicionamiento */
+    flex-direction: column;
+    gap: 8px;
+    /* Espacio entre elementos */
+}
+
+/* Fila para título y precio alineados */
+.titulo-precio-fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.info-item-carrito h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    /* Más grande como en la referencia */
+    font-family: "Anton", sans-serif;
+    font-weight: 100;
+}
+
+.precio-item-v2 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: #333;
+    font-family: "Open Sans", sans-serif;
+}
+
+.variante-info {
+    font-size: 1rem;
+    color: #333;
+    font-family: "Open Sans", sans-serif;
+}
+
+/* --- NUEVO ESTILO PARA CONTROLES DE CANTIDAD (V2) --- */
+.controles-cantidad.v2 {
+    display: flex;
+    align-items: center;
+    border: 2px solid #d5d5d5;
+    border-radius: 5px;
+    overflow: hidden;
+    width: fit-content;
+    /* Se ajusta al contenido */
+}
+
+.controles-cantidad.v2 .btn-cantidad {
+    background: none;
+    border: none;
+    padding: 5px 12px;
+    font-size: 1.1rem;
+    color: #030303;
+    cursor: pointer;
+}
+
+.controles-cantidad.v2 .btn-cantidad:hover {
+    background-color: #e5e5e5;
+}
+
+.controles-cantidad.v2 .numero-cantidad {
+    border-left: 2px solid #d5d5d5;
+    border-right: 2px solid #d5d5d5;
+    padding: 5px 15px;
+    font-weight: 600;
+    font-family: "Open Sans", sans-serif;
+}
+
+/* --- NUEVO ESTILO PARA EL BOTÓN ELIMINAR (V2) --- */
+.btn-eliminar-item.v2 {
+    color: #e67e22;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    /* Quitamos subrayado */
+    font-size: 0.95rem;
+    align-self: flex-end;
+    /* Alineamos a la derecha del contenedor flex */
+    margin-top: auto;
+    /* Mover al fondo si hay espacio */
+    font-family: "Open Sans", sans-serif;
+}
+
+/* ==========================================================================
+   7. MODALES (AUTENTICACIÓN)
+   ========================================================================== */
+.modal-fondo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    /* Fondo oscuro semitransparente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    /* Para que quede por encima de todo */
+}
+
+.modal-fondo.activo {
+    display: flex;
+}
+
+.modal-contenido {
+    background: white;
+    border-radius: 6px;
+    text-align: left;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    /* Tu color de acento */
+    animation: aparecerModal 0.3s ease-out;
+}
+
+.modal-contenido h3 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
+    letter-spacing: 1px;
+}
+
+.modal-contenido p {
+    font-family: 'Open Sans', sans-serif;
+    color: #030303;
+}
+
+.cabecera-modal-carrito {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 14px 20px;
+    background-color: #030303;
+}
+
+.body-modal-carrito {
+    background-color: white;
+    width: 100%;
+    padding: 14px 20px;
+    align-items: center;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.footer-modal-carrito {
+    display: flex;
+    justify-content: right;
+    padding: 20px;
+    
+}
+
+.btn-secundario {
+    margin-right: 20px;
+    text-decoration: none;
+    color: white;
+    font-size: 0.9rem;
+    background-color: #030303;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 1rem;
+    font-weight: 400;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.btn-secundario:hover {
+    background-color: #13213c;
+}
+
+.btn-ok {
+    background-color: #e5e5e5;
+    color: #030303;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 400;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-ok:hover {
+    background-color: #fca311;
+    color: white;
+}
+
+/* ==========================================================================
+   8. SUGERENCIAS DE BÚSQUEDA
+   ========================================================================== */
+#contenedor-sugerencias {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #d5d5d5;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    z-index: 2000;
+    display: none; /* Oculto por defecto */
+    max-height: 350px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+.sugerencia-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #d5d5d5;
+    transition: background-color 0.2s ease;
+    font-family: "Open Sans", sans-serif;
+    color: #333;
+}
+
+.sugerencia-item:last-child {
+    border-bottom: none;
+}
+
+.sugerencia-item:hover {
+    background-color: #e5e5e5;
+}
+
+.sugerencia-img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.sugerencia-texto {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* 9. Estilos base para la lista de requisitos */
+.requisitos-contrasena {
+    list-style: none;
+    padding: 0;
+    margin-top: 2px; /* Para acercarlo al input */
+    margin-bottom: 15px;
+    text-align: left;
+    font-size: 0.75rem;
+    color: #666; /* Gris sutil */
+    width: 100%;
+}
+
+.requisitos-contrasena li {
+    margin-bottom: 4px;
+    transition: color 0.3s ease;
+}
+
+/* Clase que aplicaremos con JS cuando el requisito se cumpla */
+.requisitos-contrasena li.valido {
+    color: #28a745; /* Verde de éxito */
+}
+
+.requisitos-contrasena li.valido i {
+    /* Cambiamos el ícono a una palomita verde */
+    content: "\F26A"; /* Código del icono bi-check-circle en Bootstrap Icons */
+}

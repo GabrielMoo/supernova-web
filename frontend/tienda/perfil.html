@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/perfil.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anton&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <script src="js/navbar.js"></script>
+
+    <title>Perfil</title>
+</head>
+
+<body>
+
+    <main-navbar></main-navbar>
+
+    <main class="contenedor-principal">
+        <div class="contenido-perfil">
+
+            <h2 class="titulo-pagina">PERFIL</h2>
+
+            <div class="tarjeta-blanca">
+                <div class="campo-info">
+                    <div class="fila-etiqueta">
+                        <span class="valor" id="nombre-perfil">Nombre</span>
+                        <i class="bi bi-pencil icono-editar"></i>
+                    </div>
+                </div>
+
+                <div class="campo-info">
+                    <span class="etiqueta">Correo electrónico</span>
+                    <span class="valor" id="email-perfil">Correo</span>
+                </div>
+            </div>
+
+            <div class="tarjeta-blanca">
+                <div class="cabecera-direcciones">
+                    <span class="titulo-seccion">Direcciones</span>
+                    <button id="btn-abrir-formulario" class="btn-agregar">
+                        <i class="bi bi-plus-lg"></i> Agregar
+                    </button>
+                </div>
+
+                <div id="seccion-direcciones-dinamica">
+
+                    <div id="estado-vacio" class="caja-vacia">
+                        <i class="bi bi-info-circle"></i>
+                        <span>No se agregaron direcciones.</span>
+                    </div>
+
+                    <div id="grid-direcciones" class="grid-direcciones" style="display: none;">
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="acciones-sesion">
+                <button class="btn-cerrar-sesion">CERRAR SESIÓN</button>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="overlay-direccion" class="overlay">
+        <div class="panel-formulario">
+            <div class="cabecera-modal">
+                <h2>Agregar dirección</h2>
+                <button id="btn-cerrar-modal" class="btn-cerrar-modal"><i class="bi bi-x-lg"></i></button>
+            </div>
+
+            <form id="form-direccion">
+                <div class="grupo-input">
+                    <label class="etiqueta-pequena">País o región</label>
+                    <select name="pais" class="input-estilo" required>
+                        <option value="Mexico" selected>México</option>
+                    </select>
+                </div>
+
+                <div class="grupo-input">
+                    <input type="text" name="calle" class="input-estilo" placeholder="Calle y número de casa" required>
+                </div>
+
+                <div class="grupo-input">
+                    <input type="text" name="referencia" class="input-estilo" placeholder="Apartamento, local, etc.">
+                </div>
+
+                <div class="fila-inputs triple">
+                    <div class="grupo-input">
+                        <input type="text" name="codigoPostal" class="input-estilo" placeholder="Código postal"
+                            required>
+                    </div>
+                    <div class="grupo-input">
+                        <input type="text" name="ciudad" class="input-estilo" placeholder="Ciudad" required>
+                    </div>
+                    <div class="grupo-input">
+                        <select name="estado" class="input-estilo" required>
+                            <option value="" disabled selected>Estado</option>
+                            <option value="Aguascalientes">Aguascalientes</option>
+                            <option value="Baja California">Baja California</option>
+                            <option value="Baja California Sur">Baja California Sur</option>
+                            <option value="CDMX">CDMX</option>
+                            <option value="Campeche">Campeche</option>
+                            <option value="Chiapas">Chiapas</option>
+                            <option value="Chihuahua">Chihuahua</option>
+                            <option value="Coahuila">Coahuila</option>
+                            <option value="Colima">Colima</option>
+                            <option value="Durango">Durango</option>
+                            <option value="Guanajuato">Guanajuato</option>
+                            <option value="Guerrero">Guerrero</option>
+                            <option value="Hidalgo">Hidalgo</option>
+                            <option value="Jalisco">Jalisco</option>
+                            <option value="México">México</option>
+                            <option value="Michoacán">Michoacán</option>
+                            <option value="Morelos">Morelos</option>
+                            <option value="Nayarit">Nayarit</option>
+                            <option value="Nuevo León">Nuevo León</option>
+                            <option value="Oaxaca">Oaxaca</option>
+                            <option value="Puebla">Puebla</option>
+                            <option value="Querétaro">Querétaro</option>
+                            <option value="Quintana Roo">Quintana Roo</option>
+                            <option value="San Luis Potosí">San Luis Potosí</option>
+                            <option value="Sinaloa">Sinaloa</option>
+                            <option value="Sonora">Sonora</option>
+                            <option value="Tabasco">Tabasco</option>
+                            <option value="Tamaulipas">Tamaulipas</option>
+                            <option value="Tlaxcala">Tlaxcala</option>
+                            <option value="Veracruz">Veracruz</option>
+                            <option value="Yucatán">Yucatán</option>
+                            <option value="Zacatecas">Zacatecas</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grupo-input">
+                    <input type="tel" name="telefono" class="input-estilo" placeholder="Teléfono" required>
+                </div>
+
+                <div class="fila-checkbox">
+                    <input type="checkbox" id="check-predeterminada" name="esPredeterminada">
+                    <label for="check-predeterminada">Esta es mi dirección predeterminada.</label>
+                </div>
+
+                <div class="contenedor-borrar">
+                    <button type="button" id="btn-eliminar-direccion" class="btn-eliminar" title="Eliminar dirección">
+                        Eliminar
+                    </button>
+                </div>
+
+                <div class="acciones-form">
+                    <button type="button" id="btn-cancelar" class="btn-texto">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+        <div id="modal-carrito-vacio" class="modal-fondo" style="display: none;">
+        <div class="modal-contenido">
+            <div class="cabecera-modal-carrito">
+                <h3>¡ELIMINAR DIRECCION!</h3>
+            </div>
+            <div class="body-modal-carrito">
+                <p>¿Estas seguro de que deseas eliminar esta direccion?</p>
+            </div>
+            <div class="footer-modal-carrito">
+                <button id="btn-cancelar-eliminar" class="btn-secundario">Cancelar</button>
+                <button id="btn-confirmar-eliminar" class="btn-ok">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-guardar-direccion" class="modal-fondo" style="display: none;">
+        <div class="modal-contenido">
+            <div class="cabecera-modal-carrito">
+                <h3>¡DIRECCION GUARDADA!</h3>
+            </div>
+            <div class="body-modal-carrito">
+                <p>La direccion ha sido guardada con exito</p>
+            </div>
+            <div class="footer-modal-carrito">
+                <button id="btn-confirmar-guardado" class="btn-ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-editar-direccion" class="modal-fondo" style="display: none;">
+        <div class="modal-contenido">
+            <div class="cabecera-modal-carrito">
+                <h3>¡DIRECCION EDITADA!</h3>
+            </div>
+            <div class="body-modal-carrito">
+                <p>La direccion ha sido actualizada con exito</p>
+            </div>
+            <div class="footer-modal-carrito">
+                <button id="btn-confirmar-editado" class="btn-ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/scriptPerfil.js"></script>
+</body>
+
+</html>

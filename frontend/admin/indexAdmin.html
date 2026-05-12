@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anton&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="js/sidebar.js"></script>
+
+    <title>Supernova Admin</title>
+</head>
+
+<body>
+    <main-sidebar></main-sidebar>
+
+    <!-- Sección del Dashboard -->
+    <div class="grid-dashboard">
+        <div class="card1">
+            <div class="kpi-icon"><i class="bi bi-cash-stack"></i></div>
+            <div class="kpi-info">
+                <h3>Ventas Totales</h3>
+                <p id="kpi-ventas">Cargando...</p>
+            </div>
+        </div>
+        <div class="card2">
+            <div class="kpi-icon"><i class="bi bi-bag-check"></i></div>
+            <div class="kpi-info">
+                <h3>Pedidos Totales</h3>
+                <p id="kpi-pedidos-totales">Cargando...</p>
+            </div>
+        </div>
+        <div class="card3">
+            <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+            <div class="kpi-info">
+                <h3>Pedidos Pendientes</h3>
+                <p id="kpi-pendientes">Cargando...</p>
+            </div>
+        </div>
+        <div class="card4">
+            <div class="kpi-icon"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="kpi-info">
+                <h3>Alertas de Inventario</h3>
+                <p id="kpi-alertas">Cargando...</p>
+            </div>
+        </div>
+        <div class="card5">
+            <div class="kpi-chart-header">
+                <h3>Top Playeras Más Vendidas</h3>
+            </div>
+            <div class="kpi-chart-body">
+                <canvas id="grafico-dona"></canvas>
+            </div>
+        </div>
+        <div class="card6">
+            <div class="kpi-chart-header">
+                <h3>Próximos Envíos</h3>
+            </div>
+            <div class="proximos-envios" id="lista-proximos-envios">
+                <p>Cargando...</p>
+            </div>
+        </div>
+        <div class="card7">
+            <div class="kpi-chart-header">
+                <h3>Ventas Últimos 7 Días</h3>
+            </div>
+            <div class="kpi-chart-body">
+                <canvas id="grafico-lineas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+
+</html>

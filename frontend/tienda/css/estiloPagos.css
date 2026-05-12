@@ -1,0 +1,331 @@
+/* VARIABLES DE COLOR PARA MANTENER CONSISTENCIA */
+:root {
+    --gris-fondo: #efefef;
+    --blanco: #ffffff;
+    --negro: #030303;
+    --gris-suave: #d5d5d5;
+    --gris-texto: #666666;
+    --azul-acento: #13213c; /* Puedes cambiarlo por tu color de marca */
+    --borde-radio: 12px;
+    --sombra: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+body {
+    background-color: var(--gris-fondo);
+    font-family: 'Open Sans', sans-serif;
+    color: var(--negro);
+    margin: 0;
+}
+
+/* CONTENEDOR PRINCIPAL (2 COLUMNAS) */
+.contenedor-checkout {
+    background-color: var(--gris-fondo);
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 380px; /* Columna izquierda más ancha */
+    gap: 30px;
+}
+
+/* SECCIONES BLANCAS (TARJETAS) */
+.seccion-checkout, .resumen-pedido {
+    background-color: var(--blanco);
+    border-radius: var(--borde-radio);
+    padding: 25px;
+    box-shadow: var(--sombra);
+    margin-bottom: 20px;
+}
+
+.encabezado-seccion h3 {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--gris-fondo);
+    padding-bottom: 10px;
+}
+
+/* 1. DIRECCIONES DE ENVÍO */
+.lista-direcciones-pago {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tarjeta-direccion-pago {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid var(--gris-suave);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tarjeta-direccion-pago:hover {
+    background-color: #fafafa;
+}
+
+.tarjeta-direccion-pago input[type="radio"] {
+    margin-right: 15px;
+    accent-color: var(--negro);
+    transform: scale(1.2);
+}
+
+.info-dir strong {
+    display: block;
+    font-size: 1rem;
+}
+
+.info-dir span {
+    font-size: 0.9rem;
+    color: var(--gris-texto);
+}
+
+/* 2. FORMULARIO DE TARJETA */
+.formulario-tarjeta {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.input-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.input-grupo label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gris-texto);
+}
+
+.input-grupo input {
+    padding: 12px;
+    border: 1px solid var(--gris-suave);
+    border-radius: 6px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.input-grupo input:focus {
+    border-color: var(--negro);
+}
+
+.fila-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* 3. RESUMEN DEL PEDIDO (DERECHA) */
+.columna-derecha {
+    position: sticky;
+    top: 100px; /* Para que te siga al hacer scroll */
+    height: fit-content;
+}
+
+.resumen-pedido {
+    width: 500px;
+}
+
+.item-resumen {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--gris-fondo);
+}
+
+.item-resumen img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 6px;
+    background-color: var(--gris-fondo);
+}
+
+.item-resumen .detalles {
+    flex: 1;
+}
+
+.item-resumen .nombre {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.item-resumen .variante {
+    font-size: 0.85rem;
+    color: var(--gris-texto);
+    margin: 2px 0;
+}
+
+.item-resumen .precio {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+/* DESGLOSE DE COSTOS */
+.desglose-costos {
+    margin-top: 20px;
+}
+
+.linea-costo {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    color: var(--gris-texto);
+}
+
+.linea-costo.total {
+    color: var(--negro);
+    font-weight: 800;
+    font-size: 1.2rem;
+    margin-top: 15px;
+}
+
+/* BOTONES */
+.btn-pagar {
+    width: 100%;
+    padding: 18px;
+    background-color: var(--negro);
+    color: var(--blanco);
+    border: none;
+    border-radius: 8px;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.3s;
+    margin-top: 10px;
+}
+
+.btn-pagar:hover {
+    background-color: #333;
+    transform: translateY(-2px);
+}
+
+.aviso-sin-direccion {
+    text-align: center;
+    padding: 20px;
+    border: 2px dashed var(--gris-suave);
+    border-radius: 8px;
+}
+
+/* RESPONSIVO */
+@media (max-width: 850px) {
+    .contenedor-checkout {
+        grid-template-columns: 1fr;
+    }
+    
+    .columna-derecha {
+        position: static;
+    }
+}
+
+/* ==========================================================================
+   7. MODALES (AUTENTICACIÓN)
+   ========================================================================== */
+.modal-fondo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    /* Fondo oscuro semitransparente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    /* Para que quede por encima de todo */
+}
+
+.modal-fondo.activo {
+    display: flex;
+}
+
+.modal-contenido {
+    background: white;
+    border-radius: 6px;
+    text-align: left;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    /* Tu color de acento */
+    animation: aparecerModal 0.3s ease-out;
+}
+
+.modal-contenido h3 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
+    letter-spacing: 1px;
+}
+
+.modal-contenido p {
+    font-family: 'Open Sans', sans-serif;
+    color: #030303;
+}
+
+.cabecera-modal-carrito {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 14px 20px;
+    background-color: #030303;
+}
+
+.body-modal-carrito {
+    background-color: white;
+    width: 100%;
+    padding: 14px 20px;
+    align-items: center;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.footer-modal-carrito {
+    display: flex;
+    justify-content: right;
+    padding: 20px;
+    
+}
+
+.btn-secundario {
+    margin-right: 20px;
+    text-decoration: none;
+    color: white;
+    font-size: 0.9rem;
+    background-color: #030303;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 1rem;
+    font-weight: 400;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.btn-secundario:hover {
+    background-color: #13213c;
+}
+
+.btn-ok {
+    background-color: #e5e5e5;
+    color: #030303;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 400;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-ok:hover {
+    background-color: #fca311;
+    color: white;
+}
