@@ -1,6 +1,7 @@
 // 1. Importamos AMBOS modelos correctamente
 const { Playera } = require('../models/Playera');
 const Stock = require('../models/Stock');
+const ItemCarrito = require('../models/ItemCarrito');
 
 const registrarPlayera = async (req, res) => {
     try {
@@ -103,28 +104,28 @@ const obtenerPlayeraCategoria = async (req, res) => {
 };
 
 const eliminarPlayera = async (req, res) => {
-
     try {
-
         const id = req.params.id;
 
-        // Eliminamos la playera
-        await Playera.findByIdAndDelete(id);
+        // 1. Obtener todos los IDs de stock asociados a esta playera
+        const stocks = await Stock.find({ playera: id }, '_id');
+        const stockIds = stocks.map(s => s._id);
 
-        // Eliminamos también su stock relacionado
+        // 2. Eliminar todos los ítems de carrito que referencien esos stocks
+        if (stockIds.length > 0) {
+            await ItemCarrito.deleteMany({ stock: { $in: stockIds } });
+        }
+
+        // 3. Eliminar los documentos de stock
         await Stock.deleteMany({ playera: id });
 
-        res.status(200).json({
-            mensaje: "Playera eliminada correctamente"
-        });
+        // 4. Eliminar la playera
+        await Playera.findByIdAndDelete(id);
 
+        res.status(200).json({ mensaje: "Playera eliminada correctamente, incluyendo su stock y referencias en carritos." });
     } catch (error) {
-
         console.error("Error eliminando playera:", error);
-
-        res.status(500).json({
-            mensaje: "Error al eliminar playera"
-        });
+        res.status(500).json({ mensaje: "Error al eliminar playera" });
     }
 };
 
