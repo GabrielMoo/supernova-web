@@ -31,7 +31,7 @@ let productoEditando = null;
 
 async function cargarProductos() {
     try {
-        
+
         const response = await fetch('/api/playeras/obtener-playeras');
         const productos = await response.json();
 
@@ -90,15 +90,15 @@ function renderTable(page) {
                     <td>
                         ${item.stock.map(s => {
 
-                            const bajoStock = s.cantidad <= 3;
+            const bajoStock = s.cantidad <= 3;
 
-                            return `
+            return `
                                 <div style="margin-bottom: 4px; 
                                             color: ${bajoStock ? 'red' : 'inherit'};">
                                     ${s.corte} ${s.talla}: ${s.cantidad}
                                 </div>
                             `;
-                        }).join('')}
+        }).join('')}
                     </td>
                     <td class="action-icons">
                         <i class="bi bi-pen btn-editar" data-id="${item.id}"></i>
@@ -115,41 +115,62 @@ function renderTable(page) {
 
         const btnEliminar = tr.querySelector('.btn-eliminar');
 
-        btnEliminar.addEventListener('click', async (e) => {
+        // Variables para guardar el ID del producto a eliminar
+        let productoAEliminarId = null;
 
+        btnEliminar.addEventListener('click', (e) => {
             e.stopPropagation();
-
-            const confirmar = confirm("¿Eliminar esta playera?");
-
-            if (!confirmar) return;
-
-            try {
-
-                const response = await fetch(
-                    `/api/playeras/eliminar-playera/${item.id}`,
-                    {
-                        method: 'DELETE'
-                    }
-                );
-
-                if (response.ok) {
-
-                    // Recargar productos
-                    await cargarProductos();
-
-                } else {
-
-                    alert("No se pudo eliminar");
-
-                }
-
-            } catch (error) {
-
-                console.error(error);
-                alert("Error del servidor");
-
-            }
+            productoAEliminarId = item.id;
+            mostrarModalEliminar();
         });
+
+        // Función para mostrar el modal
+        function mostrarModalEliminar() {
+            const modal = document.getElementById('modal-eliminar-playera');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        // Función para ocultar el modal
+        function ocultarModalEliminar() {
+            const modal = document.getElementById('modal-eliminar-playera');
+            if (modal) modal.style.display = 'none';
+        }
+
+        // Escuchar el botón "Eliminar" del modal
+        const btnConfirmarEliminarModal = document.getElementById('btn-confirmar-eliminar');
+        if (btnConfirmarEliminarModal) {
+            btnConfirmarEliminarModal.addEventListener('click', async () => {
+                if (!productoAEliminarId) return;
+
+                try {
+                    const response = await fetch(`/api/playeras/eliminar-playera/${productoAEliminarId}`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        await cargarProductos(); // Recarga la tabla
+                        ocultarModalEliminar();
+                        productoAEliminarId = null;
+                        // Opcional: mostrar un modal de éxito
+                    } else {
+                        alert("No se pudo eliminar");
+                        ocultarModalEliminar();
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert("Error del servidor");
+                    ocultarModalEliminar();
+                }
+            });
+        }
+
+        // Escuchar el botón "Cancelar" del modal
+        const btnCancelarEliminarModal = document.getElementById('btn-cancelar-eliminar');
+        if (btnCancelarEliminarModal) {
+            btnCancelarEliminarModal.addEventListener('click', () => {
+                ocultarModalEliminar();
+                productoAEliminarId = null;
+            });
+        }
 
         const btnEditar = tr.querySelector('.btn-editar');
 
@@ -179,7 +200,7 @@ function renderTable(page) {
 
             }
 
-             document.querySelectorAll('.check-corte').forEach(check => {
+            document.querySelectorAll('.check-corte').forEach(check => {
                 check.checked = false;
             });
 
@@ -376,7 +397,7 @@ btnPublicar.addEventListener('click', async (e) => {
     const stockData = recolectarStock();
 
     // Pequeña validación para evitar enviar cosas vacías (Actualizada)
-    if (!nombre || !precio  || stockData.length === 0 || !categoria || !color) {
+    if (!nombre || !precio || stockData.length === 0 || !categoria || !color) {
         alert("Por favor: llena todos los campos, elige categoría y color, sube una imagen y agrega al menos una talla en stock.");
         return;
     }
@@ -523,7 +544,7 @@ function resetearFormularioYVista() {
     // Esto es lo que estaba fallando
     vistaAgregarProducto.style.display = 'none';
     vistaProductos.style.display = 'block';
-    
+
     console.log("Vista restablecida y formulario limpio");
 }
 

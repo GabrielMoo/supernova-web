@@ -244,6 +244,24 @@
         </div>
     </div>
 
+    <!-- Modal de confirmación para eliminar playera -->
+    <div id="modal-eliminar-playera" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="cabecera-playera-guardada">
+                <h3>¡CONFIRMAR ELIMINACIÓN!</h3>
+            </div>
+            <div class="body-playera-guardada">
+                <p>¿Estás seguro de que deseas eliminar esta playera?<br>Esta acción también eliminará su stock y no se
+                    podrá deshacer.</p>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 15px; padding: 20px;">
+                <button id="btn-cancelar-eliminar" class="btn-cancelar"
+                    style="background-color: #e5e5e5; color: #030303;">Cancelar</button>
+                <button id="btn-confirmar-eliminar" class="btn-publicar">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/productos.js"></script>
 
 </body>
