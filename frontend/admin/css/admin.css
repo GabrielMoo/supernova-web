@@ -191,7 +191,8 @@ body {
 .main-productos {
     margin-left: 260px;
     width: calc(100% - 260px);
-    height: calc(100% + 120px);
+    height: 100vh;
+    overflow-y: auto;
     background-color: #e5e5e5;
     padding-top: 20px;
     padding: 20px 40px;
