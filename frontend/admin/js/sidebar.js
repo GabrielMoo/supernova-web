@@ -40,9 +40,15 @@ class SupernovaSide extends HTMLElement {
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="contenedor-panel" id="btn-cerrar-sesion">
-                                <i class="bi bi-box-arrow-left"></i>
-                                <span>Cerrar sesión</span>
+                            <a href="billetera.html" class="contenedor-panel">
+                                <i class="bi bi-wallet2"></i>
+                                <span>Billetera</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="administracion.html" class="contenedor-panel">
+                                <i class="bi bi-person-gear"></i>
+                                <span>Administracion</span>
                             </a>
                         </li>
                     </ul>
@@ -50,35 +56,25 @@ class SupernovaSide extends HTMLElement {
             </nav>
         </aside>
         `;
-        
         document.addEventListener("DOMContentLoaded", () => {
-            // --- 1. Lógica para resaltar la página activa ---
+            // Obtenemos la ruta de la página actual (ej. /productos.html)
             const currentPath = window.location.pathname;
+
+            // Seleccionamos todos los enlaces dentro del sidebar
             const navLinks = document.querySelectorAll('.nav-links a');
 
             navLinks.forEach(link => {
+                // Obtenemos el valor del href de cada enlace (ej. productos.html)
                 const linkPath = link.getAttribute('href');
-                // Ignoramos el botón de cerrar sesión para que no se marque como activo
-                if (linkPath !== '#' && (currentPath.endsWith(linkPath) || (currentPath.endsWith('/') && linkPath === 'indexAdmin.html'))) {
-                    link.classList.add('active'); 
+
+                // Comparamos si la URL actual termina con el href del enlace
+                // También cubrimos el caso de que sea la raíz "/" para el Dashboard
+                if (currentPath.endsWith(linkPath) || (currentPath.endsWith('/') && linkPath === 'indexAdmin.html')) {
+                    link.classList.add('active'); // Agregamos la clase que lo pone negro
                 } else {
-                    link.classList.remove('active'); 
+                    link.classList.remove('active'); // Nos aseguramos de quitarla de los demás
                 }
             });
-
-            // --- 2. Lógica para Cerrar Sesión ---
-            const btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
-            if (btnCerrarSesion) {
-                btnCerrarSesion.addEventListener('click', (e) => {
-                    e.preventDefault(); // Evita que la página suba al inicio por el href="#"
-                    
-                    // Aquí borramos la sesión del almacenamiento del navegador
-                    localStorage.removeItem('usuario'); // Ajusta este nombre si usas otro
-                    
-                    // Redirigimos al usuario a la vista de login
-                    window.location.href = '../login-register.html';
-                });
-            }
         });
     }
 }

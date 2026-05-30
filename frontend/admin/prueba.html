@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B.F. Library - Products</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --sidebar-bg: #5a4943;
+            --main-bg: #fcf6ef;
+            --card-bg: #ffffff;
+            --text-dark: #333333;
+            --text-light: #ffffff;
+            --text-muted: #888888;
+            --text-label: #666666;
+            --border-color: #d1cfcb;
+            --table-header: #fdf5eb;
+            --accent-color: #5a4943;
+            --input-bg: #ffffff;
+            --upload-bg: #e2e0dd;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: var(--main-bg);
+            color: var(--text-dark);
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            padding: 0 20px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .sidebar-logo i { margin-right: 10px; font-size: 1.5rem; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #dcdcdc;
+            text-decoration: none;
+            margin: 4px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .nav-item i { width: 25px; font-size: 1.1rem; }
+        .nav-item.active { background-color: var(--card-bg); color: var(--text-dark); font-weight: 600; }
+        .nav-item:hover:not(.active) { background-color: rgba(255, 255, 255, 0.1); color: var(--text-light); }
+
+        .nav-section {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 20px 20px 10px;
+            color: #aaaaaa;
+            letter-spacing: 1px;
+        }
+        .badge { background-color: #333; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; margin-left: auto; }
+
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* Topbar */
+        .topbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; }
+        .search-bar { background-color: var(--card-bg); padding: 10px 20px; border-radius: 20px; display: flex; align-items: center; width: 300px; }
+        .search-bar input { border: none; outline: none; background: transparent; margin-left: 10px; width: 100%; }
+        .search-bar i { color: var(--text-muted); }
+        .top-icons { display: flex; align-items: center; gap: 20px; }
+        .top-icons i { color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
+        .avatar { width: 40px; height: 40px; background-image: url('https://i.pravatar.cc/100'); background-size: cover; border-radius: 50%; }
+
+        /* Content Area */
+        .content-area { padding: 0 40px 40px; overflow-y: auto; flex: 1; }
+
+        .header-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--accent-color); }
+        .header-title h1 { color: var(--accent-color); font-size: 2rem; }
+        .btn-add { background-color: var(--accent-color); color: var(--text-light); border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; }
+
+        /* --- TABLE VIEW --- */
+        .table-container { background-color: var(--card-bg); border-radius: 10px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .tabs-and-tools { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .tabs { display: flex; gap: 10px; }
+        .tab { padding: 8px 16px; cursor: pointer; border-radius: 20px; font-size: 0.9rem; color: var(--text-muted); }
+        .tab.active { background-color: #fdf5eb; color: var(--text-dark); font-weight: 600; }
+        .tools { display: flex; gap: 10px; }
+        .tool-btn { border: 1px solid var(--border-color); background: transparent; padding: 8px 12px; border-radius: 6px; cursor: pointer; color: var(--text-muted); }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px 20px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--table-header); color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
+        tr { transition: 0.2s; cursor: pointer; }
+        tr:hover:not(.selected) { background-color: #f9f9f9; }
+        tr.selected td { background-color: var(--sidebar-bg); color: var(--text-light); border-bottom-color: var(--sidebar-bg); }
+        .action-icons i { margin-right: 15px; color: var(--text-muted); cursor: pointer; }
+        tr.selected .action-icons i { color: var(--text-light); }
+
+        .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 10px; }
+        .page-numbers { display: flex; gap: 5px; }
+        .btn-page { border: 1px solid var(--border-color); background: var(--card-bg); padding: 8px 12px; border-radius: 6px; cursor: pointer; color: var(--text-dark); }
+        .btn-page.active { background-color: var(--accent-color); color: var(--text-light); border-color: var(--accent-color); }
+        .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-nav { display: flex; align-items: center; gap: 5px; }
+
+        /* --- FORM VIEW (ADD PRODUCT) --- */
+        .breadcrumbs { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px; }
+        .breadcrumbs a { color: var(--text-muted); text-decoration: none; cursor: pointer; }
+        .breadcrumbs a:hover { text-decoration: underline; }
+        .breadcrumbs span { color: var(--accent-color); font-weight: 600; }
+
+        .form-container { background-color: var(--card-bg); border-radius: 10px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 30px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-label); font-size: 0.9rem; font-weight: 500; }
+        
+        .form-group input[type="text"], 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .form-group input::placeholder, .form-group textarea::placeholder { color: #bbb; }
+        .form-group textarea { resize: vertical; }
+
+        /* Toggle Switches */
+        .toggle-group { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+        .toggle-row { display: flex; align-items: center; gap: 10px; }
+        .toggle-label { font-size: 0.8rem; color: var(--text-muted); }
+        
+        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent-color); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* Upload Area */
+        .upload-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .btn-icon { border: 1px solid var(--border-color); background: transparent; padding: 5px 8px; border-radius: 6px; cursor: pointer; color: var(--text-muted); }
+        
+        .upload-box {
+            background-color: var(--upload-bg);
+            height: 300px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed #bbaaa4;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: 0.3s;
+        }
+        .upload-box:hover { background-color: #d8d5d1; }
+        .upload-box i { font-size: 3rem; color: var(--sidebar-bg); }
+        
+        .btn-view { border: 1px solid var(--border-color); background: #fdf5eb; padding: 6px 20px; border-radius: 6px; cursor: pointer; color: var(--accent-color); font-weight: 500; }
+
+        .stock-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        /* Form Bottom Actions */
+        .form-actions { display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+        .btn-publish { background-color: var(--sidebar-bg); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-delete { background-color: transparent; color: var(--sidebar-bg); border: 1px solid var(--sidebar-bg); padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-logo"><i class="fa-solid fa-book-open"></i> B.F. Library</div>
+        <a href="#" class="nav-item"><i class="fa-solid fa-house"></i> Dashboard</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-list"></i> Orders <span class="badge">16</span></a>
+        <a href="#" class="nav-item active"><i class="fa-solid fa-tags"></i> Products</a>
+        <a href="#" class="nav-item"><i class="fa-regular fa-folder"></i> Categories</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-users"></i> Customers</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-chart-simple"></i> Reports</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-star"></i> Coupons</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-user-tie"></i> Employees</a>
+        <a href="#" class="nav-item"><i class="fa-regular fa-message"></i> Messages <span class="badge">3</span></a>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search...">
+            </div>
+            <div class="top-icons">
+                <i class="fa-regular fa-bell"></i>
+                <div class="avatar"></div>
+            </div>
+        </div>
+
+        <div class="content-area">
+            
+            <div id="view-products">
+                <div class="header-title">
+                    <h1>Products</h1>
+                    <button class="btn-add" id="btn-show-form">
+                        <i class="fa-solid fa-plus"></i> Add a product
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <div class="tabs-and-tools">
+                        <div class="tabs">
+                            <div class="tab active">All Products (6955)</div>
+                            <div class="tab">Featured Products</div>
+                            <div class="tab">On Sale</div>
+                            <div class="tab">Out of Stock</div>
+                        </div>
+                        <div class="tools">
+                            <div class="search-bar" style="width: 200px; padding: 8px 15px; border: 1px solid var(--border-color); box-shadow: none;">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" placeholder="Search...">
+                            </div>
+                            <button class="tool-btn"><i class="fa-solid fa-filter"></i></button>
+                            <button class="tool-btn"><i class="fa-solid fa-ellipsis"></i></button>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Order</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            </tbody>
+                    </table>
+
+                    <div class="pagination">
+                        <button class="btn-page btn-nav" id="btn-prev">
+                            <i class="fa-solid fa-arrow-left"></i> Previous
+                        </button>
+                        <div class="page-numbers" id="page-numbers"></div>
+                        <button class="btn-page btn-nav" id="btn-next">
+                            Next <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-add-product" style="display: none;">
+                <div class="breadcrumbs">
+                    <a href="#" id="link-back-products">Products</a> &gt; <span>Add a product</span> &gt;
+                </div>
+                
+                <div class="header-title" style="margin-top: 10px;">
+                    <h1 style="color: var(--text-dark);">Add a product here</h1>
+                    <i class="fa-solid fa-ellipsis-vertical" style="color: var(--text-muted); cursor: pointer;"></i>
+                </div>
+
+                <div class="form-container">
+                    <div class="form-grid">
+                        
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label>Enter product name</label>
+                                <input type="text" placeholder="product name">
+                            </div>
+                            <div class="form-group">
+                                <label>Enter product description</label>
+                                <textarea placeholder="product description" rows="5"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Enter product price</label>
+                                <input type="text" placeholder="product price">
+                            </div>
+                            <div class="form-group">
+                                <label>Choose the product category</label>
+                                <select>
+                                    <option>Product category</option>
+                                    <option>Detective</option>
+                                    <option>Fantasy</option>
+                                    <option>Horror</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Add tags</label>
+                                <input type="text" placeholder="tag names">
+                            </div>
+                            <div class="form-group">
+                                <label>Enter product code</label>
+                                <input type="text" placeholder="product code">
+                            </div>
+                            <div class="form-group">
+                                <label>Repeat the code</label>
+                                <input type="text" placeholder="repeat">
+                            </div>
+                            
+                            <div class="form-group toggle-group">
+                                <label>Tax included</label>
+                                <div class="toggle-row">
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <span class="toggle-label">Yes/No</span>
+                            </div>
+                            <div class="form-group toggle-group">
+                                <label>Featured product</label>
+                                <div class="toggle-row">
+                                    <label class="switch">
+                                        <input type="checkbox">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <span class="toggle-label">Yes/No</span>
+                            </div>
+                        </div>
+
+                        <div class="form-col">
+                            <div class="form-group">
+                                <div class="upload-header">
+                                    <label>Upload product images</label>
+                                    <button class="btn-icon"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                                <div class="upload-box">
+                                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                                </div>
+                                <button class="btn-view">View</button>
+                            </div>
+
+                            <div class="stock-row">
+                                <div class="form-group">
+                                    <label>Stock Quantity</label>
+                                    <input type="text" placeholder="Unlimited">
+                                </div>
+                                <div class="form-group">
+                                    <label>Stock Status</label>
+                                    <select>
+                                        <option>In Stock</option>
+                                        <option>Out of Stock</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button class="btn-publish" id="btnPublish">Publish the Product</button>
+                        <button class="btn-delete">Delete</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="js/productos.js"></script>
+
+</body>
+</html>
