@@ -33,57 +33,59 @@ function procesarPedidos(pedidos) {
     let totalVentas = 0;
     let totalPedidos = pedidos.length;
     let pendientes = 0;
-    const ventasPorProducto = {}; // { nombre: cantidad }
-    const ventasPorFecha = {};    // { fecha: total }
+    let ventasDetalladas = {}; 
+    let ventasPorDiaMap = {}; // Mapa temporal para agrupar ventas por fecha
 
     pedidos.forEach(pedido => {
-        // 1. Monto total
-        let monto = 0;
-        if (pedido.total?.$numberDecimal) {
-            monto = parseFloat(pedido.total.$numberDecimal);
-        } else if (pedido.total) {
-            monto = parseFloat(pedido.total);
-        }
-        totalVentas += monto;
-
-        // 2. Pendientes
         if (pedido.estado === 'Pendiente') pendientes++;
+        
+        // Sumar total de ventas
+        const total = parseFloat(pedido.total?.$numberDecimal || pedido.total || 0);
+        totalVentas += total;
 
-        // 3. Items para gráfico de dona
+        // --- LÓGICA PARA VENTAS DE LOS ÚLTIMOS 7 DÍAS ---
+        if (pedido.createdAt) {
+            // Extraer solo la fecha (YYYY-MM-DD)
+            const fechaString = new Date(pedido.createdAt).toISOString().split('T')[0];
+            
+            if (!ventasPorDiaMap[fechaString]) {
+                ventasPorDiaMap[fechaString] = 0;
+            }
+            ventasPorDiaMap[fechaString] += total;
+        }
+
+        // --- LÓGICA PARA EL DRILL-DOWN ---
         if (pedido.items && Array.isArray(pedido.items)) {
             pedido.items.forEach(item => {
-                const nombre = item.productoSnapshot?.nombre || 'Sin nombre';
-                const cantidad = item.cantidad || 0;
-                ventasPorProducto[nombre] = (ventasPorProducto[nombre] || 0) + cantidad;
-            });
-        }
+                const nombre = item.productoSnapshot.nombre;
+                const variante = `${item.productoSnapshot.corte} (${item.productoSnapshot.talla})`;
+                const cant = item.cantidad;
 
-        // 4. Registrar ventas por fecha en un mapa temporal
-        if (pedido.createdAt) {
-            const fecha = new Date(pedido.createdAt).toISOString().split('T')[0]; // yyyy-mm-dd
-            ventasPorFecha[fecha] = (ventasPorFecha[fecha] || 0) + monto;
+                if (!ventasDetalladas[nombre]) {
+                    ventasDetalladas[nombre] = { total: 0, detalles: {} };
+                }
+                
+                ventasDetalladas[nombre].total += cant;
+                
+                if (!ventasDetalladas[nombre].detalles[variante]) {
+                    ventasDetalladas[nombre].detalles[variante] = 0;
+                }
+                ventasDetalladas[nombre].detalles[variante] += cant;
+            });
         }
     });
 
-    // --- LA LÓGICA CORRECTA DE TU RAMA ANTERIOR ---
-    // 5. Obtener últimos 7 días fijos (incluyendo hoy) y rellenar con ceros
-    const hoy = new Date();
-    const ventasUltimos7Dias = [];
-    
-    for (let i = 6; i >= 0; i--) {
-        const dia = new Date(hoy);
-        dia.setDate(hoy.getDate() - i);
-        const clave = dia.toISOString().split('T')[0];
-        
-        ventasUltimos7Dias.push({
-            fecha: clave,
-            total: ventasPorFecha[clave] || 0 // Si no hay ventas, asigna 0
-        });
-    }
+    // Convertir el mapa de fechas a un arreglo, ordenarlo y tomar los últimos 7
+    let ventasUltimos7Dias = Object.keys(ventasPorDiaMap)
+        .sort() // Orden cronológico
+        .slice(-7) // Tomar solo los últimos 7 días
+        .map(fecha => ({
+            fecha: fecha,
+            total: ventasPorDiaMap[fecha]
+        }));
 
-    return { totalVentas, totalPedidos, pendientes, ventasPorProducto, ventasUltimos7Dias };
+    return { totalVentas, totalPedidos, pendientes, ventasDetalladas, ventasUltimos7Dias };
 }
-
 function actualizarKPIs(totalVentas, totalPedidos, pendientes) {
     const formatoMXN = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
     document.getElementById('kpi-ventas').textContent = formatoMXN.format(totalVentas);
