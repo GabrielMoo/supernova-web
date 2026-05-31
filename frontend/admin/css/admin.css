@@ -922,7 +922,7 @@ input:checked+.slider:before {
     background: transparent;
     border: 1px solid #030303;
     border-radius: 4px;
-    padding: 4px 12px;
+    padding: 5px 10px;
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
