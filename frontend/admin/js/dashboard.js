@@ -23,9 +23,8 @@ async function cargarTodo() {
         renderizarProximosEnvios(pedidosGlobal);
         await cargarAlertasInventario();
 
-        // Inicializar gráfico de líneas con el rango actual
         actualizarLineas(currentRange);
-        agregarControlesRango();
+        agregarControlesRangoYExportacion();
 
     } catch (error) {
         console.error('Error en dashboard:', error);
@@ -72,7 +71,7 @@ function actualizarKPIs(totalVentas, totalPedidos, pendientes) {
     document.getElementById('kpi-pendientes').textContent = `${pendientes} por enviar`;
 }
 
-// ---------- Gráfico de Dona (sin cambios) ----------
+// ---------- Gráfico de Dona ----------
 function renderizarDona(datos, esDetalle = false) {
     const ctx = document.getElementById('grafico-dona').getContext('2d');
     const btnVolver = document.getElementById('btn-volver-dona');
@@ -114,14 +113,13 @@ function renderizarDona(datos, esDetalle = false) {
     };
 }
 
-// ---------- NUEVO: Gráfico de Líneas con rango dinámico ----------
+// ---------- Gráfico de Líneas con rango dinámico ----------
 function actualizarLineas(rangoDias) {
     if (!pedidosGlobal.length) return;
 
     const ctx = document.getElementById('grafico-lineas')?.getContext('2d');
     if (!ctx) return;
 
-    // Generar los últimos 'rangoDias' días (UTC, para coincidir con el parsing de fechas)
     const hoy = new Date();
     hoy.setUTCHours(0, 0, 0, 0);
     const fechas = [];
@@ -133,7 +131,6 @@ function actualizarLineas(rangoDias) {
         fechas.push({ fechaStr, label });
     }
 
-    // Mapa de ventas por día (fechaStr -> total)
     const ventasPorDia = new Map();
     fechas.forEach(f => ventasPorDia.set(f.fechaStr, 0));
 
@@ -183,33 +180,173 @@ function actualizarLineas(rangoDias) {
     });
 }
 
-// ---------- Botones de rango (se agregan automáticamente) ----------
-function agregarControlesRango() {
-    const card7Header = document.querySelector('.card7 .kpi-chart-header');
-    if (!card7Header || document.getElementById('rango-buttons')) return;
+// ---------- Exportación de datos (CSV) ----------
+function generarCSVVentas(periodo) {
+    // periodo: 'current', 'year', 'all'
+    let startDate, endDate;
+    const hoy = new Date();
+    hoy.setUTCHours(0, 0, 0, 0);
 
-    const container = document.createElement('div');
-    container.id = 'rango-buttons';
-    container.className = 'rango-buttons';
-    container.innerHTML = `
+    if (periodo === 'current') {
+        // Usa el rango actual de la gráfica
+        endDate = hoy;
+        startDate = new Date(hoy);
+        startDate.setUTCDate(hoy.getUTCDate() - (currentRange - 1));
+    } else if (periodo === 'year') {
+        endDate = hoy;
+        startDate = new Date(hoy);
+        startDate.setUTCFullYear(hoy.getUTCFullYear() - 1);
+        startDate.setUTCDate(startDate.getUTCDate() + 1); // para incluir el día exacto de hace un año
+    } else if (periodo === 'all') {
+        if (pedidosGlobal.length === 0) return null;
+        // Obtener la fecha más antigua
+        const fechasPedidos = pedidosGlobal
+            .map(p => new Date(p.createdAt))
+            .filter(d => !isNaN(d))
+            .sort((a, b) => a - b);
+        if (fechasPedidos.length === 0) return null;
+        startDate = fechasPedidos[0];
+        startDate.setUTCHours(0, 0, 0, 0);
+        endDate = hoy;
+    } else {
+        return null;
+    }
+
+    // Generar todas las fechas entre startDate y endDate (inclusive)
+    const fechas = [];
+    let current = new Date(startDate);
+    while (current <= endDate) {
+        const fechaStr = current.toISOString().split('T')[0];
+        const label = `${current.getUTCDate()}/${current.getUTCMonth() + 1}/${current.getUTCFullYear()}`;
+        fechas.push({ fechaStr, label });
+        current.setUTCDate(current.getUTCDate() + 1);
+    }
+
+    // Mapa de ventas
+    const ventasMap = new Map();
+    fechas.forEach(f => ventasMap.set(f.fechaStr, 0));
+
+    pedidosGlobal.forEach(pedido => {
+        if (!pedido.createdAt) return;
+        const fechaPedido = new Date(pedido.createdAt).toISOString().split('T')[0];
+        if (ventasMap.has(fechaPedido)) {
+            const total = parseFloat(pedido.total?.$numberDecimal || pedido.total || 0);
+            ventasMap.set(fechaPedido, ventasMap.get(fechaPedido) + total);
+        }
+    });
+
+    // Construir CSV
+    let csvRows = [['Fecha', 'Ventas (MXN)']];
+    for (let f of fechas) {
+        csvRows.push([f.label, ventasMap.get(f.fechaStr).toFixed(2)]);
+    }
+
+    return csvRows.map(row => row.join(',')).join('\n');
+}
+
+function descargarCSV(csv, nombreArchivo) {
+    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); // BOM para caracteres especiales
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', nombreArchivo);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function exportarDatos() {
+    const select = document.getElementById('export-periodo-select');
+    const periodo = select.value;
+    let nombreArchivo = '';
+    let periodoTexto = '';
+
+    switch(periodo) {
+        case 'current':
+            periodoTexto = `ultimos_${currentRange}_dias`;
+            nombreArchivo = `ventas_${periodoTexto}.csv`;
+            break;
+        case 'year':
+            periodoTexto = 'ultimo_ano';
+            nombreArchivo = `ventas_${periodoTexto}.csv`;
+            break;
+        case 'all':
+            periodoTexto = 'todos_los_datos';
+            nombreArchivo = `ventas_${periodoTexto}.csv`;
+            break;
+        default:
+            return;
+    }
+
+    const csv = generarCSVVentas(periodo);
+    if (!csv) {
+        alert('No hay datos para exportar.');
+        return;
+    }
+    descargarCSV(csv, nombreArchivo);
+}
+
+// ---------- Controles de rango y exportación ----------
+function agregarControlesRangoYExportacion() {
+    const card7Header = document.querySelector('.card7 .kpi-chart-header');
+    if (!card7Header) return;
+
+    // Evitar duplicados
+    if (document.getElementById('rango-buttons') && document.getElementById('export-controls')) return;
+
+    // Crear contenedor para botones de rango (7,30,90)
+    const rangoContainer = document.createElement('div');
+    rangoContainer.id = 'rango-buttons';
+    rangoContainer.className = 'rango-buttons';
+    rangoContainer.innerHTML = `
         <button data-rango="7" class="btn-rango active">7 días</button>
         <button data-rango="30" class="btn-rango">30 días</button>
         <button data-rango="90" class="btn-rango">90 días</button>
     `;
-    card7Header.appendChild(container);
 
-    const buttons = container.querySelectorAll('.btn-rango');
+    // Crear contenedor para exportación
+    const exportContainer = document.createElement('div');
+    exportContainer.id = 'export-controls';
+    exportContainer.className = 'export-controls';
+    exportContainer.innerHTML = `
+        <select id="export-periodo-select" class="export-select">
+            <option value="current">Rango actual (${currentRange} días)</option>
+            <option value="year">Último año (365 días)</option>
+            <option value="all">Todos los datos históricos</option>
+        </select>
+        <button id="btn-exportar" class="btn-exportar" title="Exportar a CSV">
+            <i class="bi bi-download"></i> Exportar
+        </button>
+    `;
+
+    card7Header.appendChild(rangoContainer);
+    card7Header.appendChild(exportContainer);
+
+    // Eventos de los botones de rango
+    const buttons = rangoContainer.querySelectorAll('.btn-rango');
     buttons.forEach(btn => {
         btn.addEventListener('click', (e) => {
             buttons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentRange = parseInt(btn.getAttribute('data-rango'), 10);
             actualizarLineas(currentRange);
+            // Actualizar texto del selector de exportación para reflejar el rango actual
+            const select = document.getElementById('export-periodo-select');
+            if (select) {
+                select.options[0].text = `Rango actual (${currentRange} días)`;
+            }
         });
     });
+
+    // Evento del botón exportar
+    const btnExportar = document.getElementById('btn-exportar');
+    if (btnExportar) {
+        btnExportar.addEventListener('click', exportarDatos);
+    }
 }
 
-// ---------- Resto de funciones sin cambios ----------
+// ---------- Alertas de inventario y próximos envíos (sin cambios) ----------
 async function cargarAlertasInventario() {
     try {
         const response = await fetch('/api/playeras/obtener-playeras');
