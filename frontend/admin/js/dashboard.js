@@ -4,30 +4,24 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(cargarTodo, 300000);
 });
 
+let graficoDona; 
+let datosGlobalesVentas = {};
+
 async function cargarTodo() {
     try {
-        // 1. Obtener todos los pedidos
         const response = await fetch('/api/pedidos/admin/todos');
         if (!response.ok) throw new Error('Error al obtener pedidos');
         const pedidos = await response.json();
 
-        // 2. Calcular KPIs + datos para gráficos
-        const { totalVentas, totalPedidos, pendientes, ventasPorProducto, ventasUltimos7Dias } = procesarPedidos(pedidos);
+        // 1. Procesar pedidos con profundidad
+        const { totalVentas, totalPedidos, pendientes, ventasDetalladas, ventasUltimos7Dias } = procesarPedidos(pedidos);
+        
+        datosGlobalesVentas = ventasDetalladas;
 
-        // 3. Actualizar KPIs
         actualizarKPIs(totalVentas, totalPedidos, pendientes);
-
-        // 4. Gráfico de Dona
-        renderizarDona(ventasPorProducto);
-
-        // 5. Gráfico de Líneas
+        renderizarDona(ventasDetalladas); // Pasamos el objeto detallado
         renderizarLineas(ventasUltimos7Dias);
-
-        // --- EL PASO QUE FALTABA ---
-        // 6. Renderizar la lista de la tarjeta 6
-        renderizarProximosEnvios(pedidos); 
-
-        // 7. Cargar alertas de inventario
+        renderizarProximosEnvios(pedidos);
         await cargarAlertasInventario();
 
     } catch (error) {
@@ -39,50 +33,39 @@ function procesarPedidos(pedidos) {
     let totalVentas = 0;
     let totalPedidos = pedidos.length;
     let pendientes = 0;
-    const ventasPorProducto = {}; // { nombre: cantidad }
-    const ventasPorFecha = {};    // { fecha: total }
+    let ventasDetalladas = {}; 
+    let ventasUltimos7Dias = {};
 
     pedidos.forEach(pedido => {
-        // Monto total
-        let monto = 0;
-        if (pedido.total?.$numberDecimal) {
-            monto = parseFloat(pedido.total.$numberDecimal);
-        } else if (pedido.total) {
-            monto = parseFloat(pedido.total);
-        }
-        totalVentas += monto;
-
-        // Pendientes
         if (pedido.estado === 'Pendiente') pendientes++;
+        
+        // Sumar total de ventas (asumiendo que total es Decimal128)
+        const total = parseFloat(pedido.total?.$numberDecimal || pedido.total || 0);
+        totalVentas += total;
 
-        // Items para gráfico de dona
+        // --- LÓGICA PARA EL DRILL-DOWN ---
+        // Asumiendo que el pedido viene con sus "items" (ItemPedido) poblados
         if (pedido.items && Array.isArray(pedido.items)) {
             pedido.items.forEach(item => {
-                const nombre = item.productoSnapshot?.nombre || 'Sin nombre';
-                const cantidad = item.cantidad || 0;
-                ventasPorProducto[nombre] = (ventasPorProducto[nombre] || 0) + cantidad;
+                const nombre = item.productoSnapshot.nombre;
+                const variante = `${item.productoSnapshot.corte} (${item.productoSnapshot.talla})`;
+                const cant = item.cantidad;
+
+                if (!ventasDetalladas[nombre]) {
+                    ventasDetalladas[nombre] = { total: 0, detalles: {} };
+                }
+                
+                ventasDetalladas[nombre].total += cant;
+                
+                if (!ventasDetalladas[nombre].detalles[variante]) {
+                    ventasDetalladas[nombre].detalles[variante] = 0;
+                }
+                ventasDetalladas[nombre].detalles[variante] += cant;
             });
         }
-
-        // Ventas por día para gráfico de líneas (solo últimos 7 días)
-        const fecha = new Date(pedido.createdAt).toISOString().split('T')[0]; // yyyy-mm-dd
-        ventasPorFecha[fecha] = (ventasPorFecha[fecha] || 0) + monto;
     });
 
-    // Obtener últimos 7 días (incluyendo hoy)
-    const hoy = new Date();
-    const ventasUltimos7Dias = [];
-    for (let i = 6; i >= 0; i--) {
-        const dia = new Date(hoy);
-        dia.setDate(hoy.getDate() - i);
-        const clave = dia.toISOString().split('T')[0];
-        ventasUltimos7Dias.push({
-            fecha: clave,
-            total: ventasPorFecha[clave] || 0
-        });
-    }
-
-    return { totalVentas, totalPedidos, pendientes, ventasPorProducto, ventasUltimos7Dias };
+    return { totalVentas, totalPedidos, pendientes, ventasDetalladas, ventasUltimos7Dias };
 }
 
 function actualizarKPIs(totalVentas, totalPedidos, pendientes) {
@@ -94,48 +77,50 @@ function actualizarKPIs(totalVentas, totalPedidos, pendientes) {
 
 // ---------- Gráfico de Dona ----------
 let donaChart = null;
-function renderizarDona(ventasPorProducto) {
-    const ctx = document.getElementById('grafico-dona')?.getContext('2d');
-    if (!ctx) return;
+function renderizarDona(datos, esDetalle = false) {
+    const ctx = document.getElementById('grafico-dona').getContext('2d');
+    const btnVolver = document.getElementById('btn-volver-dona');
+    const titulo = document.getElementById('titulo-dona');
 
-    // Top 5 productos más vendidos + "Otros"
-    const ordenados = Object.entries(ventasPorProducto).sort((a, b) => b[1] - a[1]);
-    const top = ordenados.slice(0, 5);
-    const otrosTotal = ordenados.slice(5).reduce((sum, [, cant]) => sum + cant, 0);
+    if (graficoDona) graficoDona.destroy();
 
-    const labels = top.map(([nombre]) => nombre);
-    const data = top.map(([, cant]) => cant);
-    if (otrosTotal > 0) {
-        labels.push('Otros');
-        data.push(otrosTotal);
-    }
+    // Si es detalle, los labels son "Corte (Talla)", si no, son los nombres de las playeras
+    const labels = Object.keys(datos);
+    const valores = esDetalle ? Object.values(datos) : labels.map(l => datos[l].total);
 
-    if (donaChart) donaChart.destroy();
-    donaChart = new Chart(ctx, {
+    graficoDona = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: labels,
             datasets: [{
-                data: data,
-                backgroundColor: ['#030303', '#e67e22', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6'],
-                borderWidth: 2,
-                borderColor: '#fff'
+                data: valores,
+                backgroundColor: ['#030303', '#555555', '#999999', '#cccccc', '#e5e5e5']
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        font: { family: 'Open Sans', size: 12 },
-                        color: '#333'
-                    }
+            onClick: (evento, elementos) => {
+                // Solo permitimos click si estamos en la vista general
+                if (!esDetalle && elementos.length > 0) {
+                    const indice = elementos[0].index;
+                    const nombrePlayera = labels[indice];
+                    
+                    // Cambiamos a la vista de tallas/cortes
+                    titulo.innerText = `Ventas: ${nombrePlayera}`;
+                    btnVolver.style.display = 'block';
+                    renderizarDona(datosGlobalesVentas[nombrePlayera].detalles, true);
                 }
             }
         }
     });
+
+    // Configurar el botón de volver
+    btnVolver.onclick = () => {
+        titulo.innerText = "Top Playeras Más Vendidas";
+        btnVolver.style.display = 'none';
+        renderizarDona(datosGlobalesVentas, false);
+    };
 }
 
 // ---------- Gráfico de Líneas ----------

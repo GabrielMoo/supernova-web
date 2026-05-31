@@ -851,10 +851,31 @@ input:checked+.slider:before {
     margin-bottom: 15px;
 }
 
+.kpi-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .kpi-chart-body {
     flex-grow: 1;
     position: relative;
     min-height: 0; /* Importante para que Chart.js no desborde */
+}
+
+.btn-retroceder {
+    background: #030303;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.3s;
+}
+
+.btn-retroceder:hover {
+    background: #333;
 }
 
 /* Personalización del Scrollbar (estilo limpio) */
