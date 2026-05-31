@@ -34,17 +34,27 @@ function procesarPedidos(pedidos) {
     let totalPedidos = pedidos.length;
     let pendientes = 0;
     let ventasDetalladas = {}; 
-    let ventasUltimos7Dias = {};
+    let ventasPorDiaMap = {}; // Mapa temporal para agrupar ventas por fecha
 
     pedidos.forEach(pedido => {
         if (pedido.estado === 'Pendiente') pendientes++;
         
-        // Sumar total de ventas (asumiendo que total es Decimal128)
+        // Sumar total de ventas
         const total = parseFloat(pedido.total?.$numberDecimal || pedido.total || 0);
         totalVentas += total;
 
+        // --- LÓGICA PARA VENTAS DE LOS ÚLTIMOS 7 DÍAS ---
+        if (pedido.createdAt) {
+            // Extraer solo la fecha (YYYY-MM-DD)
+            const fechaString = new Date(pedido.createdAt).toISOString().split('T')[0];
+            
+            if (!ventasPorDiaMap[fechaString]) {
+                ventasPorDiaMap[fechaString] = 0;
+            }
+            ventasPorDiaMap[fechaString] += total;
+        }
+
         // --- LÓGICA PARA EL DRILL-DOWN ---
-        // Asumiendo que el pedido viene con sus "items" (ItemPedido) poblados
         if (pedido.items && Array.isArray(pedido.items)) {
             pedido.items.forEach(item => {
                 const nombre = item.productoSnapshot.nombre;
@@ -65,9 +75,17 @@ function procesarPedidos(pedidos) {
         }
     });
 
+    // Convertir el mapa de fechas a un arreglo, ordenarlo y tomar los últimos 7
+    let ventasUltimos7Dias = Object.keys(ventasPorDiaMap)
+        .sort() // Orden cronológico
+        .slice(-7) // Tomar solo los últimos 7 días
+        .map(fecha => ({
+            fecha: fecha,
+            total: ventasPorDiaMap[fecha]
+        }));
+
     return { totalVentas, totalPedidos, pendientes, ventasDetalladas, ventasUltimos7Dias };
 }
-
 function actualizarKPIs(totalVentas, totalPedidos, pendientes) {
     const formatoMXN = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
     document.getElementById('kpi-ventas').textContent = formatoMXN.format(totalVentas);
@@ -94,7 +112,7 @@ function renderizarDona(datos, esDetalle = false) {
             labels: labels,
             datasets: [{
                 data: valores,
-                backgroundColor: ['#030303', '#555555', '#999999', '#cccccc', '#e5e5e5']
+                backgroundColor: ['#e67e22', '#13213c', '#fca311', '#27ae60', '#8e44ad']
             }]
         },
         options: {
