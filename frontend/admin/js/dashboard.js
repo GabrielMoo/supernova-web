@@ -1,28 +1,31 @@
 document.addEventListener('DOMContentLoaded', () => {
     cargarTodo();
-    // Actualizar cada 5 minutos
-    setInterval(cargarTodo, 300000);
+    setInterval(cargarTodo, 300000); // cada 5 min
 });
 
-let graficoDona; 
+let graficoDona;
 let datosGlobalesVentas = {};
+let pedidosGlobal = [];
+let lineasChart = null;
+let currentRange = 7; // días por defecto
 
 async function cargarTodo() {
     try {
         const response = await fetch('/api/pedidos/admin/todos');
         if (!response.ok) throw new Error('Error al obtener pedidos');
-        const pedidos = await response.json();
+        pedidosGlobal = await response.json();
 
-        // 1. Procesar pedidos con profundidad
-        const { totalVentas, totalPedidos, pendientes, ventasDetalladas, ventasUltimos7Dias } = procesarPedidos(pedidos);
-        
+        const { totalVentas, totalPedidos, pendientes, ventasDetalladas } = procesarPedidos(pedidosGlobal);
         datosGlobalesVentas = ventasDetalladas;
 
         actualizarKPIs(totalVentas, totalPedidos, pendientes);
-        renderizarDona(ventasDetalladas); // Pasamos el objeto detallado
-        renderizarLineas(ventasUltimos7Dias);
-        renderizarProximosEnvios(pedidos);
+        renderizarDona(ventasDetalladas);
+        renderizarProximosEnvios(pedidosGlobal);
         await cargarAlertasInventario();
+
+        // Inicializar gráfico de líneas con el rango actual
+        actualizarLineas(currentRange);
+        agregarControlesRango();
 
     } catch (error) {
         console.error('Error en dashboard:', error);
@@ -33,28 +36,14 @@ function procesarPedidos(pedidos) {
     let totalVentas = 0;
     let totalPedidos = pedidos.length;
     let pendientes = 0;
-    let ventasDetalladas = {}; 
-    let ventasPorDiaMap = {}; // Mapa temporal para agrupar ventas por fecha
+    let ventasDetalladas = {};
 
     pedidos.forEach(pedido => {
         if (pedido.estado === 'Pendiente') pendientes++;
-        
-        // Sumar total de ventas
+
         const total = parseFloat(pedido.total?.$numberDecimal || pedido.total || 0);
         totalVentas += total;
 
-        // --- LÓGICA PARA VENTAS DE LOS ÚLTIMOS 7 DÍAS ---
-        if (pedido.createdAt) {
-            // Extraer solo la fecha (YYYY-MM-DD)
-            const fechaString = new Date(pedido.createdAt).toISOString().split('T')[0];
-            
-            if (!ventasPorDiaMap[fechaString]) {
-                ventasPorDiaMap[fechaString] = 0;
-            }
-            ventasPorDiaMap[fechaString] += total;
-        }
-
-        // --- LÓGICA PARA EL DRILL-DOWN ---
         if (pedido.items && Array.isArray(pedido.items)) {
             pedido.items.forEach(item => {
                 const nombre = item.productoSnapshot.nombre;
@@ -64,9 +53,7 @@ function procesarPedidos(pedidos) {
                 if (!ventasDetalladas[nombre]) {
                     ventasDetalladas[nombre] = { total: 0, detalles: {} };
                 }
-                
                 ventasDetalladas[nombre].total += cant;
-                
                 if (!ventasDetalladas[nombre].detalles[variante]) {
                     ventasDetalladas[nombre].detalles[variante] = 0;
                 }
@@ -75,17 +62,9 @@ function procesarPedidos(pedidos) {
         }
     });
 
-    // Convertir el mapa de fechas a un arreglo, ordenarlo y tomar los últimos 7
-    let ventasUltimos7Dias = Object.keys(ventasPorDiaMap)
-        .sort() // Orden cronológico
-        .slice(-7) // Tomar solo los últimos 7 días
-        .map(fecha => ({
-            fecha: fecha,
-            total: ventasPorDiaMap[fecha]
-        }));
-
-    return { totalVentas, totalPedidos, pendientes, ventasDetalladas, ventasUltimos7Dias };
+    return { totalVentas, totalPedidos, pendientes, ventasDetalladas };
 }
+
 function actualizarKPIs(totalVentas, totalPedidos, pendientes) {
     const formatoMXN = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
     document.getElementById('kpi-ventas').textContent = formatoMXN.format(totalVentas);
@@ -93,8 +72,7 @@ function actualizarKPIs(totalVentas, totalPedidos, pendientes) {
     document.getElementById('kpi-pendientes').textContent = `${pendientes} por enviar`;
 }
 
-// ---------- Gráfico de Dona ----------
-let donaChart = null;
+// ---------- Gráfico de Dona (sin cambios) ----------
 function renderizarDona(datos, esDetalle = false) {
     const ctx = document.getElementById('grafico-dona').getContext('2d');
     const btnVolver = document.getElementById('btn-volver-dona');
@@ -102,7 +80,6 @@ function renderizarDona(datos, esDetalle = false) {
 
     if (graficoDona) graficoDona.destroy();
 
-    // Si es detalle, los labels son "Corte (Talla)", si no, son los nombres de las playeras
     const labels = Object.keys(datos);
     const valores = esDetalle ? Object.values(datos) : labels.map(l => datos[l].total);
 
@@ -119,12 +96,9 @@ function renderizarDona(datos, esDetalle = false) {
             responsive: true,
             maintainAspectRatio: false,
             onClick: (evento, elementos) => {
-                // Solo permitimos click si estamos en la vista general
                 if (!esDetalle && elementos.length > 0) {
                     const indice = elementos[0].index;
                     const nombrePlayera = labels[indice];
-                    
-                    // Cambiamos a la vista de tallas/cortes
                     titulo.innerText = `Ventas: ${nombrePlayera}`;
                     btnVolver.style.display = 'block';
                     renderizarDona(datosGlobalesVentas[nombrePlayera].detalles, true);
@@ -133,7 +107,6 @@ function renderizarDona(datos, esDetalle = false) {
         }
     });
 
-    // Configurar el botón de volver
     btnVolver.onclick = () => {
         titulo.innerText = "Top Playeras Más Vendidas";
         btnVolver.style.display = 'none';
@@ -141,17 +114,40 @@ function renderizarDona(datos, esDetalle = false) {
     };
 }
 
-// ---------- Gráfico de Líneas ----------
-let lineasChart = null;
-function renderizarLineas(ventasUltimos7Dias) {
+// ---------- NUEVO: Gráfico de Líneas con rango dinámico ----------
+function actualizarLineas(rangoDias) {
+    if (!pedidosGlobal.length) return;
+
     const ctx = document.getElementById('grafico-lineas')?.getContext('2d');
     if (!ctx) return;
 
-    const labels = ventasUltimos7Dias.map(d => {
-        const partes = d.fecha.split('-');
-        return `${partes[2]}/${partes[1]}`; // dd/mm
+    // Generar los últimos 'rangoDias' días (UTC, para coincidir con el parsing de fechas)
+    const hoy = new Date();
+    hoy.setUTCHours(0, 0, 0, 0);
+    const fechas = [];
+    for (let i = rangoDias - 1; i >= 0; i--) {
+        const fecha = new Date(hoy);
+        fecha.setUTCDate(hoy.getUTCDate() - i);
+        const fechaStr = fecha.toISOString().split('T')[0];
+        const label = `${fecha.getUTCDate()}/${fecha.getUTCMonth() + 1}`;
+        fechas.push({ fechaStr, label });
+    }
+
+    // Mapa de ventas por día (fechaStr -> total)
+    const ventasPorDia = new Map();
+    fechas.forEach(f => ventasPorDia.set(f.fechaStr, 0));
+
+    pedidosGlobal.forEach(pedido => {
+        if (!pedido.createdAt) return;
+        const fechaPedido = new Date(pedido.createdAt).toISOString().split('T')[0];
+        if (ventasPorDia.has(fechaPedido)) {
+            const total = parseFloat(pedido.total?.$numberDecimal || pedido.total || 0);
+            ventasPorDia.set(fechaPedido, ventasPorDia.get(fechaPedido) + total);
+        }
     });
-    const datos = ventasUltimos7Dias.map(d => d.total);
+
+    const labels = fechas.map(f => f.label);
+    const datos = fechas.map(f => ventasPorDia.get(f.fechaStr));
 
     if (lineasChart) lineasChart.destroy();
     lineasChart = new Chart(ctx, {
@@ -187,7 +183,33 @@ function renderizarLineas(ventasUltimos7Dias) {
     });
 }
 
-// ---------- Alertas de Inventario (se mantiene igual) ----------
+// ---------- Botones de rango (se agregan automáticamente) ----------
+function agregarControlesRango() {
+    const card7Header = document.querySelector('.card7 .kpi-chart-header');
+    if (!card7Header || document.getElementById('rango-buttons')) return;
+
+    const container = document.createElement('div');
+    container.id = 'rango-buttons';
+    container.className = 'rango-buttons';
+    container.innerHTML = `
+        <button data-rango="7" class="btn-rango active">7 días</button>
+        <button data-rango="30" class="btn-rango">30 días</button>
+        <button data-rango="90" class="btn-rango">90 días</button>
+    `;
+    card7Header.appendChild(container);
+
+    const buttons = container.querySelectorAll('.btn-rango');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentRange = parseInt(btn.getAttribute('data-rango'), 10);
+            actualizarLineas(currentRange);
+        });
+    });
+}
+
+// ---------- Resto de funciones sin cambios ----------
 async function cargarAlertasInventario() {
     try {
         const response = await fetch('/api/playeras/obtener-playeras');
@@ -209,29 +231,21 @@ function renderizarProximosEnvios(pedidos) {
     const contenedor = document.getElementById('lista-proximos-envios');
     if (!contenedor) return;
 
-    // Filtramos solo los pedidos pendientes
     const pendientes = pedidos
         .filter(p => p.estado === 'Pendiente')
-        // Ordenamos del más antiguo al más nuevo (createdAt ascendente)
-        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+        .slice(0, 5);
 
-    // Mostramos los 5 más antiguos
-    const proximos = pendientes.slice(0, 5);
-
-    if (proximos.length === 0) {
+    if (pendientes.length === 0) {
         contenedor.innerHTML = '<p style="color: #27ae60; padding: 1rem 0;">¡Todos los pedidos están al día! 🎉</p>';
         return;
     }
 
-    contenedor.innerHTML = proximos.map(pedido => {
+    contenedor.innerHTML = pendientes.map(pedido => {
         const id = pedido._id ? pedido._id.slice(-6).toUpperCase() : 'N/A';
         const cliente = pedido.usuario?.nombre || 'Sin nombre';
-        const fecha = new Date(pedido.createdAt).toLocaleDateString('es-MX', {
-            day: 'numeric',
-            month: 'short'
-        });
+        const fecha = new Date(pedido.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
         const monto = parseFloat(pedido.total?.$numberDecimal || pedido.total || 0).toFixed(2);
-
         return `
             <div class="item-envio">
                 <div class="envio-detalle">

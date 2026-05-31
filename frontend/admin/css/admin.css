@@ -912,3 +912,27 @@ input:checked+.slider:before {
 .body-playera-guardada {
     padding: 20px;
 }
+
+/* Botones para cambiar rango de fechas en gráfico de líneas */
+.rango-buttons {
+    display: flex;
+    gap: 8px;
+}
+.btn-rango {
+    background: transparent;
+    border: 1px solid #030303;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #030303;
+}
+.btn-rango.active {
+    background-color: #030303;
+    color: white;
+}
+.btn-rango:hover:not(.active) {
+    background-color: #e5e5e5;
+}
