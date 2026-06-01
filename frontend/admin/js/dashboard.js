@@ -72,6 +72,7 @@ function actualizarKPIs(totalVentas, totalPedidos, pendientes) {
 }
 
 // ---------- Gráfico de Dona ----------
+// ---------- Gráfico de Dona ----------
 function renderizarDona(datos, esDetalle = false) {
     const ctx = document.getElementById('grafico-dona').getContext('2d');
     const btnVolver = document.getElementById('btn-volver-dona');
@@ -88,12 +89,32 @@ function renderizarDona(datos, esDetalle = false) {
             labels: labels,
             datasets: [{
                 data: valores,
-                backgroundColor: ['#e67e22', '#13213c', '#fca311', '#27ae60', '#8e44ad']
+                // Agregué el color negro que se ve en tu segunda imagen como primera opción
+                backgroundColor: ['#030303', '#e67e22', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6']
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            // --- AQUÍ EMPIEZA LA MODIFICACIÓN ---
+            plugins: {
+                legend: {
+                    position: 'right', // Mueve la leyenda a la derecha
+                    align: 'center',   // Centra la leyenda verticalmente
+                    labels: {
+                        usePointStyle: false, // Mantiene el estilo de caja rectangular
+                        boxWidth: 40,         // Ajusta el ancho del rectángulo de color
+                        boxHeight: 12,        // Ajusta el alto del rectángulo de color
+                        padding: 15,          // Espaciado entre los elementos
+                        font: {
+                            family: "'Open Sans', sans-serif",
+                            size: 12
+                        },
+                        color: '#666'
+                    }
+                }
+            },
+            // --- AQUÍ TERMINA LA MODIFICACIÓN ---
             onClick: (evento, elementos) => {
                 if (!esDetalle && elementos.length > 0) {
                     const indice = elementos[0].index;
