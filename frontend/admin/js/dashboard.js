@@ -181,6 +181,33 @@ function actualizarLineas(rangoDias) {
 }
 
 // ---------- Exportación de datos (CSV) ----------
+// ---------- NUEVA FUNCIÓN: Agrupar pedidos por día ----------
+function agruparPedidosPorDia() {
+    const mapa = new Map(); // clave: fechaStr (YYYY-MM-DD)
+    for (const pedido of pedidosGlobal) {
+        if (!pedido.createdAt) continue;
+        const fechaStr = new Date(pedido.createdAt).toISOString().split('T')[0];
+        if (!mapa.has(fechaStr)) {
+            mapa.set(fechaStr, { ventas: 0, pedidos: 0, unidades: 0 });
+        }
+        const datos = mapa.get(fechaStr);
+        const totalPedido = parseFloat(pedido.total?.$numberDecimal || pedido.total || 0);
+        datos.ventas += totalPedido;
+        datos.pedidos += 1;
+
+        // Sumar unidades desde los items del pedido
+        if (pedido.items && Array.isArray(pedido.items)) {
+            let unidadesDia = 0;
+            for (const item of pedido.items) {
+                unidadesDia += item.cantidad;
+            }
+            datos.unidades += unidadesDia;
+        }
+    }
+    return mapa;
+}
+
+// ---------- EXPORTACIÓN MEJORADA (CSV con múltiples columnas) ----------
 function generarCSVVentas(periodo) {
     // periodo: 'current', 'year', 'all'
     let startDate, endDate;
@@ -188,7 +215,6 @@ function generarCSVVentas(periodo) {
     hoy.setUTCHours(0, 0, 0, 0);
 
     if (periodo === 'current') {
-        // Usa el rango actual de la gráfica
         endDate = hoy;
         startDate = new Date(hoy);
         startDate.setUTCDate(hoy.getUTCDate() - (currentRange - 1));
@@ -196,10 +222,9 @@ function generarCSVVentas(periodo) {
         endDate = hoy;
         startDate = new Date(hoy);
         startDate.setUTCFullYear(hoy.getUTCFullYear() - 1);
-        startDate.setUTCDate(startDate.getUTCDate() + 1); // para incluir el día exacto de hace un año
+        startDate.setUTCDate(startDate.getUTCDate() + 1);
     } else if (periodo === 'all') {
         if (pedidosGlobal.length === 0) return null;
-        // Obtener la fecha más antigua
         const fechasPedidos = pedidosGlobal
             .map(p => new Date(p.createdAt))
             .filter(d => !isNaN(d))
@@ -218,30 +243,43 @@ function generarCSVVentas(periodo) {
     while (current <= endDate) {
         const fechaStr = current.toISOString().split('T')[0];
         const label = `${current.getUTCDate()}/${current.getUTCMonth() + 1}/${current.getUTCFullYear()}`;
-        fechas.push({ fechaStr, label });
+        const diaSemana = current.toLocaleDateString('es-ES', { weekday: 'long' });
+        fechas.push({ fechaStr, label, diaSemana });
         current.setUTCDate(current.getUTCDate() + 1);
     }
 
-    // Mapa de ventas
-    const ventasMap = new Map();
-    fechas.forEach(f => ventasMap.set(f.fechaStr, 0));
-
-    pedidosGlobal.forEach(pedido => {
-        if (!pedido.createdAt) return;
-        const fechaPedido = new Date(pedido.createdAt).toISOString().split('T')[0];
-        if (ventasMap.has(fechaPedido)) {
-            const total = parseFloat(pedido.total?.$numberDecimal || pedido.total || 0);
-            ventasMap.set(fechaPedido, ventasMap.get(fechaPedido) + total);
-        }
-    });
+    // Obtener mapa de datos agrupados por día
+    const datosPorDia = agruparPedidosPorDia();
 
     // Construir CSV
-    let csvRows = [['Fecha', 'Ventas (MXN)']];
-    for (let f of fechas) {
-        csvRows.push([f.label, ventasMap.get(f.fechaStr).toFixed(2)]);
+    const cabeceras = [
+        'Fecha',
+        'Día de semana',
+        'Ventas (MXN)',
+        'Número de pedidos',
+        'Unidades vendidas',
+        'Ticket promedio (MXN)',
+        'Unidades por pedido'
+    ];
+    const filas = [cabeceras];
+
+    for (const f of fechas) {
+        const datos = datosPorDia.get(f.fechaStr) || { ventas: 0, pedidos: 0, unidades: 0 };
+        const ticketPromedio = datos.pedidos > 0 ? (datos.ventas / datos.pedidos).toFixed(2) : '0';
+        const unidadesPorPedido = datos.pedidos > 0 ? (datos.unidades / datos.pedidos).toFixed(2) : '0';
+
+        filas.push([
+            f.label,
+            f.diaSemana,
+            datos.ventas.toFixed(2),
+            datos.pedidos,
+            datos.unidades,
+            ticketPromedio,
+            unidadesPorPedido
+        ]);
     }
 
-    return csvRows.map(row => row.join(',')).join('\n');
+    return filas.map(row => row.join(',')).join('\n');
 }
 
 function descargarCSV(csv, nombreArchivo) {
@@ -262,18 +300,21 @@ function exportarDatos() {
     let nombreArchivo = '';
     let periodoTexto = '';
 
-    switch(periodo) {
+    const ahora = new Date();
+    const timestamp = `${ahora.getFullYear()}${(ahora.getMonth() + 1).toString().padStart(2, '0')}${ahora.getDate().toString().padStart(2, '0')}`;
+
+    switch (periodo) {
         case 'current':
             periodoTexto = `ultimos_${currentRange}_dias`;
-            nombreArchivo = `ventas_${periodoTexto}.csv`;
+            nombreArchivo = `reporte_ventas_${periodoTexto}_${timestamp}.csv`;
             break;
         case 'year':
             periodoTexto = 'ultimo_ano';
-            nombreArchivo = `ventas_${periodoTexto}.csv`;
+            nombreArchivo = `reporte_ventas_${periodoTexto}_${timestamp}.csv`;
             break;
         case 'all':
             periodoTexto = 'todos_los_datos';
-            nombreArchivo = `ventas_${periodoTexto}.csv`;
+            nombreArchivo = `reporte_ventas_${periodoTexto}_${timestamp}.csv`;
             break;
         default:
             return;
