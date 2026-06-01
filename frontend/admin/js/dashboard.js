@@ -1,34 +1,30 @@
 document.addEventListener('DOMContentLoaded', () => {
     cargarTodo();
-    // Actualizar cada 5 minutos
-    setInterval(cargarTodo, 300000);
+    setInterval(cargarTodo, 300000); // cada 5 min
 });
+
+let graficoDona;
+let datosGlobalesVentas = {};
+let pedidosGlobal = [];
+let lineasChart = null;
+let currentRange = 7; // días por defecto
 
 async function cargarTodo() {
     try {
-        // 1. Obtener todos los pedidos
         const response = await fetch('/api/pedidos/admin/todos');
         if (!response.ok) throw new Error('Error al obtener pedidos');
-        const pedidos = await response.json();
+        pedidosGlobal = await response.json();
 
-        // 2. Calcular KPIs + datos para gráficos
-        const { totalVentas, totalPedidos, pendientes, ventasPorProducto, ventasUltimos7Dias } = procesarPedidos(pedidos);
+        const { totalVentas, totalPedidos, pendientes, ventasDetalladas } = procesarPedidos(pedidosGlobal);
+        datosGlobalesVentas = ventasDetalladas;
 
-        // 3. Actualizar KPIs
         actualizarKPIs(totalVentas, totalPedidos, pendientes);
-
-        // 4. Gráfico de Dona
-        renderizarDona(ventasPorProducto);
-
-        // 5. Gráfico de Líneas
-        renderizarLineas(ventasUltimos7Dias);
-
-        // --- EL PASO QUE FALTABA ---
-        // 6. Renderizar la lista de la tarjeta 6
-        renderizarProximosEnvios(pedidos); 
-
-        // 7. Cargar alertas de inventario
+        renderizarDona(ventasDetalladas);
+        renderizarProximosEnvios(pedidosGlobal);
         await cargarAlertasInventario();
+
+        actualizarLineas(currentRange);
+        agregarControlesRangoYExportacion();
 
     } catch (error) {
         console.error('Error en dashboard:', error);
@@ -39,50 +35,33 @@ function procesarPedidos(pedidos) {
     let totalVentas = 0;
     let totalPedidos = pedidos.length;
     let pendientes = 0;
-    const ventasPorProducto = {}; // { nombre: cantidad }
-    const ventasPorFecha = {};    // { fecha: total }
+    let ventasDetalladas = {};
 
     pedidos.forEach(pedido => {
-        // Monto total
-        let monto = 0;
-        if (pedido.total?.$numberDecimal) {
-            monto = parseFloat(pedido.total.$numberDecimal);
-        } else if (pedido.total) {
-            monto = parseFloat(pedido.total);
-        }
-        totalVentas += monto;
-
-        // Pendientes
         if (pedido.estado === 'Pendiente') pendientes++;
 
-        // Items para gráfico de dona
+        const total = parseFloat(pedido.total?.$numberDecimal || pedido.total || 0);
+        totalVentas += total;
+
         if (pedido.items && Array.isArray(pedido.items)) {
             pedido.items.forEach(item => {
-                const nombre = item.productoSnapshot?.nombre || 'Sin nombre';
-                const cantidad = item.cantidad || 0;
-                ventasPorProducto[nombre] = (ventasPorProducto[nombre] || 0) + cantidad;
+                const nombre = item.productoSnapshot.nombre;
+                const variante = `${item.productoSnapshot.corte} (${item.productoSnapshot.talla})`;
+                const cant = item.cantidad;
+
+                if (!ventasDetalladas[nombre]) {
+                    ventasDetalladas[nombre] = { total: 0, detalles: {} };
+                }
+                ventasDetalladas[nombre].total += cant;
+                if (!ventasDetalladas[nombre].detalles[variante]) {
+                    ventasDetalladas[nombre].detalles[variante] = 0;
+                }
+                ventasDetalladas[nombre].detalles[variante] += cant;
             });
         }
-
-        // Ventas por día para gráfico de líneas (solo últimos 7 días)
-        const fecha = new Date(pedido.createdAt).toISOString().split('T')[0]; // yyyy-mm-dd
-        ventasPorFecha[fecha] = (ventasPorFecha[fecha] || 0) + monto;
     });
 
-    // Obtener últimos 7 días (incluyendo hoy)
-    const hoy = new Date();
-    const ventasUltimos7Dias = [];
-    for (let i = 6; i >= 0; i--) {
-        const dia = new Date(hoy);
-        dia.setDate(hoy.getDate() - i);
-        const clave = dia.toISOString().split('T')[0];
-        ventasUltimos7Dias.push({
-            fecha: clave,
-            total: ventasPorFecha[clave] || 0
-        });
-    }
-
-    return { totalVentas, totalPedidos, pendientes, ventasPorProducto, ventasUltimos7Dias };
+    return { totalVentas, totalPedidos, pendientes, ventasDetalladas };
 }
 
 function actualizarKPIs(totalVentas, totalPedidos, pendientes) {
@@ -93,62 +72,79 @@ function actualizarKPIs(totalVentas, totalPedidos, pendientes) {
 }
 
 // ---------- Gráfico de Dona ----------
-let donaChart = null;
-function renderizarDona(ventasPorProducto) {
-    const ctx = document.getElementById('grafico-dona')?.getContext('2d');
-    if (!ctx) return;
+function renderizarDona(datos, esDetalle = false) {
+    const ctx = document.getElementById('grafico-dona').getContext('2d');
+    const btnVolver = document.getElementById('btn-volver-dona');
+    const titulo = document.getElementById('titulo-dona');
 
-    // Top 5 productos más vendidos + "Otros"
-    const ordenados = Object.entries(ventasPorProducto).sort((a, b) => b[1] - a[1]);
-    const top = ordenados.slice(0, 5);
-    const otrosTotal = ordenados.slice(5).reduce((sum, [, cant]) => sum + cant, 0);
+    if (graficoDona) graficoDona.destroy();
 
-    const labels = top.map(([nombre]) => nombre);
-    const data = top.map(([, cant]) => cant);
-    if (otrosTotal > 0) {
-        labels.push('Otros');
-        data.push(otrosTotal);
-    }
+    const labels = Object.keys(datos);
+    const valores = esDetalle ? Object.values(datos) : labels.map(l => datos[l].total);
 
-    if (donaChart) donaChart.destroy();
-    donaChart = new Chart(ctx, {
+    graficoDona = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: labels,
             datasets: [{
-                data: data,
-                backgroundColor: ['#030303', '#e67e22', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6'],
-                borderWidth: 2,
-                borderColor: '#fff'
+                data: valores,
+                backgroundColor: ['#e67e22', '#13213c', '#fca311', '#27ae60', '#8e44ad']
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        font: { family: 'Open Sans', size: 12 },
-                        color: '#333'
-                    }
+            onClick: (evento, elementos) => {
+                if (!esDetalle && elementos.length > 0) {
+                    const indice = elementos[0].index;
+                    const nombrePlayera = labels[indice];
+                    titulo.innerText = `Ventas: ${nombrePlayera}`;
+                    btnVolver.style.display = 'block';
+                    renderizarDona(datosGlobalesVentas[nombrePlayera].detalles, true);
                 }
             }
         }
     });
+
+    btnVolver.onclick = () => {
+        titulo.innerText = "Top Playeras Más Vendidas";
+        btnVolver.style.display = 'none';
+        renderizarDona(datosGlobalesVentas, false);
+    };
 }
 
-// ---------- Gráfico de Líneas ----------
-let lineasChart = null;
-function renderizarLineas(ventasUltimos7Dias) {
+// ---------- Gráfico de Líneas con rango dinámico ----------
+function actualizarLineas(rangoDias) {
+    if (!pedidosGlobal.length) return;
+
     const ctx = document.getElementById('grafico-lineas')?.getContext('2d');
     if (!ctx) return;
 
-    const labels = ventasUltimos7Dias.map(d => {
-        const partes = d.fecha.split('-');
-        return `${partes[2]}/${partes[1]}`; // dd/mm
+    const hoy = new Date();
+    hoy.setUTCHours(0, 0, 0, 0);
+    const fechas = [];
+    for (let i = rangoDias - 1; i >= 0; i--) {
+        const fecha = new Date(hoy);
+        fecha.setUTCDate(hoy.getUTCDate() - i);
+        const fechaStr = fecha.toISOString().split('T')[0];
+        const label = `${fecha.getUTCDate()}/${fecha.getUTCMonth() + 1}`;
+        fechas.push({ fechaStr, label });
+    }
+
+    const ventasPorDia = new Map();
+    fechas.forEach(f => ventasPorDia.set(f.fechaStr, 0));
+
+    pedidosGlobal.forEach(pedido => {
+        if (!pedido.createdAt) return;
+        const fechaPedido = new Date(pedido.createdAt).toISOString().split('T')[0];
+        if (ventasPorDia.has(fechaPedido)) {
+            const total = parseFloat(pedido.total?.$numberDecimal || pedido.total || 0);
+            ventasPorDia.set(fechaPedido, ventasPorDia.get(fechaPedido) + total);
+        }
     });
-    const datos = ventasUltimos7Dias.map(d => d.total);
+
+    const labels = fechas.map(f => f.label);
+    const datos = fechas.map(f => ventasPorDia.get(f.fechaStr));
 
     if (lineasChart) lineasChart.destroy();
     lineasChart = new Chart(ctx, {
@@ -184,7 +180,173 @@ function renderizarLineas(ventasUltimos7Dias) {
     });
 }
 
-// ---------- Alertas de Inventario (se mantiene igual) ----------
+// ---------- Exportación de datos (CSV) ----------
+function generarCSVVentas(periodo) {
+    // periodo: 'current', 'year', 'all'
+    let startDate, endDate;
+    const hoy = new Date();
+    hoy.setUTCHours(0, 0, 0, 0);
+
+    if (periodo === 'current') {
+        // Usa el rango actual de la gráfica
+        endDate = hoy;
+        startDate = new Date(hoy);
+        startDate.setUTCDate(hoy.getUTCDate() - (currentRange - 1));
+    } else if (periodo === 'year') {
+        endDate = hoy;
+        startDate = new Date(hoy);
+        startDate.setUTCFullYear(hoy.getUTCFullYear() - 1);
+        startDate.setUTCDate(startDate.getUTCDate() + 1); // para incluir el día exacto de hace un año
+    } else if (periodo === 'all') {
+        if (pedidosGlobal.length === 0) return null;
+        // Obtener la fecha más antigua
+        const fechasPedidos = pedidosGlobal
+            .map(p => new Date(p.createdAt))
+            .filter(d => !isNaN(d))
+            .sort((a, b) => a - b);
+        if (fechasPedidos.length === 0) return null;
+        startDate = fechasPedidos[0];
+        startDate.setUTCHours(0, 0, 0, 0);
+        endDate = hoy;
+    } else {
+        return null;
+    }
+
+    // Generar todas las fechas entre startDate y endDate (inclusive)
+    const fechas = [];
+    let current = new Date(startDate);
+    while (current <= endDate) {
+        const fechaStr = current.toISOString().split('T')[0];
+        const label = `${current.getUTCDate()}/${current.getUTCMonth() + 1}/${current.getUTCFullYear()}`;
+        fechas.push({ fechaStr, label });
+        current.setUTCDate(current.getUTCDate() + 1);
+    }
+
+    // Mapa de ventas
+    const ventasMap = new Map();
+    fechas.forEach(f => ventasMap.set(f.fechaStr, 0));
+
+    pedidosGlobal.forEach(pedido => {
+        if (!pedido.createdAt) return;
+        const fechaPedido = new Date(pedido.createdAt).toISOString().split('T')[0];
+        if (ventasMap.has(fechaPedido)) {
+            const total = parseFloat(pedido.total?.$numberDecimal || pedido.total || 0);
+            ventasMap.set(fechaPedido, ventasMap.get(fechaPedido) + total);
+        }
+    });
+
+    // Construir CSV
+    let csvRows = [['Fecha', 'Ventas (MXN)']];
+    for (let f of fechas) {
+        csvRows.push([f.label, ventasMap.get(f.fechaStr).toFixed(2)]);
+    }
+
+    return csvRows.map(row => row.join(',')).join('\n');
+}
+
+function descargarCSV(csv, nombreArchivo) {
+    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); // BOM para caracteres especiales
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', nombreArchivo);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function exportarDatos() {
+    const select = document.getElementById('export-periodo-select');
+    const periodo = select.value;
+    let nombreArchivo = '';
+    let periodoTexto = '';
+
+    switch(periodo) {
+        case 'current':
+            periodoTexto = `ultimos_${currentRange}_dias`;
+            nombreArchivo = `ventas_${periodoTexto}.csv`;
+            break;
+        case 'year':
+            periodoTexto = 'ultimo_ano';
+            nombreArchivo = `ventas_${periodoTexto}.csv`;
+            break;
+        case 'all':
+            periodoTexto = 'todos_los_datos';
+            nombreArchivo = `ventas_${periodoTexto}.csv`;
+            break;
+        default:
+            return;
+    }
+
+    const csv = generarCSVVentas(periodo);
+    if (!csv) {
+        alert('No hay datos para exportar.');
+        return;
+    }
+    descargarCSV(csv, nombreArchivo);
+}
+
+// ---------- Controles de rango y exportación ----------
+function agregarControlesRangoYExportacion() {
+    const card7Header = document.querySelector('.card7 .kpi-chart-header');
+    if (!card7Header) return;
+
+    // Evitar duplicados
+    if (document.getElementById('rango-buttons') && document.getElementById('export-controls')) return;
+
+    // Crear contenedor para botones de rango (7,30,90)
+    const rangoContainer = document.createElement('div');
+    rangoContainer.id = 'rango-buttons';
+    rangoContainer.className = 'rango-buttons';
+    rangoContainer.innerHTML = `
+        <button data-rango="7" class="btn-rango active">7 días</button>
+        <button data-rango="30" class="btn-rango">30 días</button>
+        <button data-rango="90" class="btn-rango">90 días</button>
+    `;
+
+    // Crear contenedor para exportación
+    const exportContainer = document.createElement('div');
+    exportContainer.id = 'export-controls';
+    exportContainer.className = 'export-controls';
+    exportContainer.innerHTML = `
+        <select id="export-periodo-select" class="export-select">
+            <option value="current">Rango actual (${currentRange} días)</option>
+            <option value="year">Último año (365 días)</option>
+            <option value="all">Todos los datos históricos</option>
+        </select>
+        <button id="btn-exportar" class="btn-exportar" title="Exportar a CSV">
+            <i class="bi bi-download"></i> Exportar
+        </button>
+    `;
+
+    card7Header.appendChild(rangoContainer);
+    card7Header.appendChild(exportContainer);
+
+    // Eventos de los botones de rango
+    const buttons = rangoContainer.querySelectorAll('.btn-rango');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentRange = parseInt(btn.getAttribute('data-rango'), 10);
+            actualizarLineas(currentRange);
+            // Actualizar texto del selector de exportación para reflejar el rango actual
+            const select = document.getElementById('export-periodo-select');
+            if (select) {
+                select.options[0].text = `Rango actual (${currentRange} días)`;
+            }
+        });
+    });
+
+    // Evento del botón exportar
+    const btnExportar = document.getElementById('btn-exportar');
+    if (btnExportar) {
+        btnExportar.addEventListener('click', exportarDatos);
+    }
+}
+
+// ---------- Alertas de inventario y próximos envíos (sin cambios) ----------
 async function cargarAlertasInventario() {
     try {
         const response = await fetch('/api/playeras/obtener-playeras');
@@ -206,29 +368,21 @@ function renderizarProximosEnvios(pedidos) {
     const contenedor = document.getElementById('lista-proximos-envios');
     if (!contenedor) return;
 
-    // Filtramos solo los pedidos pendientes
     const pendientes = pedidos
         .filter(p => p.estado === 'Pendiente')
-        // Ordenamos del más antiguo al más nuevo (createdAt ascendente)
-        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+        .slice(0, 5);
 
-    // Mostramos los 5 más antiguos
-    const proximos = pendientes.slice(0, 5);
-
-    if (proximos.length === 0) {
+    if (pendientes.length === 0) {
         contenedor.innerHTML = '<p style="color: #27ae60; padding: 1rem 0;">¡Todos los pedidos están al día! 🎉</p>';
         return;
     }
 
-    contenedor.innerHTML = proximos.map(pedido => {
+    contenedor.innerHTML = pendientes.map(pedido => {
         const id = pedido._id ? pedido._id.slice(-6).toUpperCase() : 'N/A';
         const cliente = pedido.usuario?.nombre || 'Sin nombre';
-        const fecha = new Date(pedido.createdAt).toLocaleDateString('es-MX', {
-            day: 'numeric',
-            month: 'short'
-        });
+        const fecha = new Date(pedido.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
         const monto = parseFloat(pedido.total?.$numberDecimal || pedido.total || 0).toFixed(2);
-
         return `
             <div class="item-envio">
                 <div class="envio-detalle">
